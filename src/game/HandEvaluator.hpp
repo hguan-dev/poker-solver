@@ -1,17 +1,13 @@
 #pragma once
 
 #include "Card.hpp"
-#include <algorithm>
-#include <map>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 class HandEvaluator
 {
   public:
-    enum HandRank {
+    enum class HandRank {
         HIGH_CARD,
         ONE_PAIR,
         TWO_PAIR,
