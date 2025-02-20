@@ -10,9 +10,15 @@ class Card
     char getSuit() const;
     int getValue() const;
     std::string toString() const;
+    bool operator==(const Card &other) const
+    {
+        return rank == other.rank && suit == other.suit;
+    }
 
-    bool operator==(const Card &other) const;
-    bool operator!=(const Card &other) const;
+    bool operator!=(const Card &other) const
+    {
+        return !(*this == other);
+    }
 
   private:
     char rank;

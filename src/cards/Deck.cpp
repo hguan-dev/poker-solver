@@ -1,15 +1,12 @@
+#include "Deck.hpp"
 #include <algorithm>
-#include <chrono>
 #include <random>
 #include <stdexcept>
-#include <string>
-
-#include "Deck.hpp"
 
 Deck::Deck()
 {
     const char suits[4] = { 'H', 'D', 'C', 'S' };
-    const char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', '0', 'J', 'Q', 'K', 'A' };
+    const char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
     for (const char &suit : suits) {
         for (const char &rank : ranks) { cards.emplace_back(Card(rank, suit)); }
     }
