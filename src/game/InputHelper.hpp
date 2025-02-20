@@ -4,6 +4,6 @@
 #include <stdexcept>
 #include <string>
 
-enum Available_actions { Check, Bet, Fold, Call, Raise };
+enum ACTIONS { CHECK, BET, FOLD, CALL, RAISE };
 
-Available_actions get_action_from_input();
+ACTIONS get_action_from_input();

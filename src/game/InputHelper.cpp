@@ -1,20 +1,20 @@
 #include "InputHelper.hpp"
 
-Available_actions get_action_from_input()
+ACTIONS get_action_from_input()
 {
     std::string input;
     std::cin >> input;
 
-    if (input == "check") {
-        return Check;
-    } else if (input == "bet") {
-        return Bet;
-    } else if (input == "fold") {
-        return Fold;
-    } else if (input == "call") {
-        return Call;
-    } else if (input == "raise") {
-        return Raise;
+    if (input == "check" || input == "ch") {
+        return ACTIONS::CHECK;
+    } else if (input == "bet" || input == "b") {
+        return ACTIONS::BET;
+    } else if (input == "fold" || input == "f") {
+        return ACTIONS::FOLD;
+    } else if (input == "call" || input == "c") {
+        return ACTIONS::CALL;
+    } else if (input == "raise" || input == "r") {
+        return ACTIONS::RAISE;
     } else {
         throw std::invalid_argument("Invalid action");
     }
