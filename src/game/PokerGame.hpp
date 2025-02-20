@@ -2,7 +2,6 @@
 
 #include "Bot.hpp"
 #include "Deck.hpp"
-#include "HandEvaluator.hpp"
 #include "Player.hpp"
 #include <memory>
 #include <string>
@@ -30,7 +29,7 @@ class PokerGame
 
   private:
     friend void executeBettingRound(PokerGame &game);
-    friend void handlePlayerAction(PokerGame &game, Agent *currentPlayer);
+    friend void handlePlayerAction(PokerGame &game, Agent &currentPlayer);
     void resetGameState();
     void collectBlinds();
     void shiftDealerButton();

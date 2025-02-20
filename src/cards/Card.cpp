@@ -1,13 +1,13 @@
 #include "Card.hpp"
-#include <stdexcept>
+#include <fmt/core.h>
 
 Card::Card(const char &rank, const char &suit) : rank(rank), suit(suit) {}
 
-char Card::getRank() const
+const char &Card::getRank() const
 {
     return rank;
 }
-char Card::getSuit() const
+const char &Card::getSuit() const
 {
     return suit;
 }
@@ -35,28 +35,23 @@ int Card::getValue() const
 
 std::string Card::toString() const
 {
-    std::string rank_str = "a";
-    rank_str[0] = rank;
+    std::string suit_str;
     switch (suit) {
     case 'H':
-        return rank_str + " of Hearts";
+        suit_str = "Hearts";
+        break;
     case 'D':
-        return rank_str + " of Diamonds";
+        suit_str = "Diamonds";
+        break;
     case 'S':
-        return rank_str + " of Spades";
+        suit_str = "Spades";
+        break;
     case 'C':
-        return rank_str + " of Clubs";
+        suit_str = "Clubs";
+        break;
+    default:
+        return "Error. Invalid suit.\n";
     }
 
-    return "Error. Invalid suit.\n";
-}
-
-bool Card::operator==(const Card &other) const
-{
-    return rank == other.rank && suit == other.suit;
-}
-
-bool Card::operator!=(const Card &other) const
-{
-    return !(*this == other);
+    return fmt::format("{} of {}", rank, suit_str);
 }
