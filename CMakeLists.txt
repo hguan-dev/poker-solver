@@ -55,6 +55,6 @@ if(TEST_SOURCES)
     enable_testing()
     add_test(NAME poker_solver_tests COMMAND poker_solver_tests)
 else()
-    message(WARNING "No test files found in the 'tests/' directory.")
+    message(WARNING "No test files found in the 'src/tests/' directory.")
 endif()
 
