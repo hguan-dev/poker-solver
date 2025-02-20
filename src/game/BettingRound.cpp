@@ -1,5 +1,5 @@
 #include "BettingRound.hpp"
-#include "InputHelper.hpp"
+#include "./util/InputHelper.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>

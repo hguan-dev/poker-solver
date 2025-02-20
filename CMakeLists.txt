@@ -28,7 +28,7 @@ target_link_libraries(poker_solver PRIVATE pybind11::pybind11)
 set_target_properties(poker_solver PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
-file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp)
+file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp src/util/*.cpp)
 
 if(TEST_SOURCES)
     add_executable(poker_solver_tests ${TEST_SOURCES} ${IMPLEMENTATION_SOURCES})
@@ -38,6 +38,7 @@ if(TEST_SOURCES)
         src/cards 
         src/game 
         src/players 
+        src/util
         ${GTest_INCLUDE_DIRS}
     )
     
