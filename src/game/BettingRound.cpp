@@ -75,11 +75,16 @@ void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 
 void executeBettingRound(PokerGame &game)
 {
-    Agent *currentPlayer =
-      game.playerIsDealer ? static_cast<Agent *>(game.player.get()) : static_cast<Agent *>(game.bot.get());
-    Agent *opponent =
-      game.playerIsDealer ? static_cast<Agent *>(game.bot.get()) : static_cast<Agent *>(game.player.get());
+    Agent *currentPlayer;
+    Agent *opponent;
 
+    if (game.playerIsDealer) {
+        currentPlayer = game.player.get();
+        opponent = game.bot.get();
+    } else {
+        currentPlayer = game.bot.get();
+        opponent = game.player.get();
+    }
     bool bettingComplete = false;
     bool firstRound = true;
 
