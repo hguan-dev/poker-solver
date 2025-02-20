@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
-#include <string>
 
 double raiseHelper(double raiseAmount)
 {
@@ -15,9 +14,9 @@ double raiseHelper(double raiseAmount)
     return raiseAmount;
 }
 
-void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
+void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 {
-    double amountToCall = game.currentBet - currentPlayer->getCurrentBet();
+    double amountToCall = game.currentBet - currentPlayer.getCurrentBet();
 
     double raiseAmount = 0;
     double totalBet, addedAmount;
@@ -30,16 +29,13 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
             break;
         case ACTIONS::BET:
             std::cin >> raiseAmount;
-
             raiseAmount = raiseHelper(raiseAmount);
-
             totalBet = game.currentBet + raiseAmount;
-            if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
-
-            addedAmount = totalBet - currentPlayer->getCurrentBet();
-            currentPlayer->deductChips(addedAmount);
+            if (totalBet > currentPlayer.getChips()) { totalBet = currentPlayer.getChips(); }
+            addedAmount = totalBet - currentPlayer.getCurrentBet();
+            currentPlayer.deductChips(addedAmount);
             game.pot += addedAmount;
-            currentPlayer->setCurrentBet(totalBet);
+            currentPlayer.setCurrentBet(totalBet);
             game.currentBet = totalBet;
             break;
         default:
@@ -51,26 +47,23 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
 
         switch (action) {
         case ACTIONS::FOLD:
-            currentPlayer->fold();
+            currentPlayer.fold();
             break;
         case ACTIONS::CALL:
-            if (amountToCall > currentPlayer->getChips()) { amountToCall = currentPlayer->getChips(); }
-            currentPlayer->deductChips(amountToCall);
+            if (amountToCall > currentPlayer.getChips()) { amountToCall = currentPlayer.getChips(); }
+            currentPlayer.deductChips(amountToCall);
             game.pot += amountToCall;
-            currentPlayer->setCurrentBet(game.currentBet);
+            currentPlayer.setCurrentBet(game.currentBet);
             break;
         case ACTIONS::RAISE:
             std::cin >> raiseAmount;
-
             raiseAmount = raiseHelper(raiseAmount);
-
             totalBet = game.currentBet + raiseAmount;
-            if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
-
-            addedAmount = totalBet - currentPlayer->getCurrentBet();
-            currentPlayer->deductChips(addedAmount);
+            if (totalBet > currentPlayer.getChips()) { totalBet = currentPlayer.getChips(); }
+            addedAmount = totalBet - currentPlayer.getCurrentBet();
+            currentPlayer.deductChips(addedAmount);
             game.pot += addedAmount;
-            currentPlayer->setCurrentBet(totalBet);
+            currentPlayer.setCurrentBet(totalBet);
             game.currentBet = totalBet;
             break;
         default:
@@ -93,8 +86,7 @@ void executeBettingRound(PokerGame &game)
     while (!bettingComplete) {
         if (currentPlayer->isActive()) {
             if (currentPlayer == game.player.get()) {
-
-                handlePlayerAction(game, currentPlayer);
+                handlePlayerAction(game, *currentPlayer);
             } else {
                 game.bot->makeMove(game.pot, game.currentBet);
             }
