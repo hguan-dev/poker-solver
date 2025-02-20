@@ -1,4 +1,6 @@
 #include "BettingRound.hpp"
+#include "InputHelper.hpp"
+#include <algorithm>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -17,66 +19,69 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
 {
     double amountToCall = game.currentBet - currentPlayer->getCurrentBet();
 
-    if (amountToCall == 0) {
-        std::string action;
-        std::cin >> action;
+    double raiseAmount = 0;
+    double totalBet, addedAmount;
 
-        if (action == "check" || action == "ch") {
-        } else if (action == "bet" || action == "b") {
-            double raiseAmount = 0;
+    if (amountToCall == 0) {
+        Available_actions action = get_action_from_input();
+
+        switch (action) {
+        case Available_actions::Check:
+            break;
+        case Available_actions::Bet:
             std::cin >> raiseAmount;
 
             raiseAmount = raiseHelper(raiseAmount);
 
-            double totalBet = game.currentBet + raiseAmount;
+            totalBet = game.currentBet + raiseAmount;
             if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
 
-            double addedAmount = totalBet - currentPlayer->getCurrentBet();
+            addedAmount = totalBet - currentPlayer->getCurrentBet();
             currentPlayer->deductChips(addedAmount);
             game.pot += addedAmount;
             currentPlayer->setCurrentBet(totalBet);
             game.currentBet = totalBet;
-
-        } else {
+            break;
+        default:
             handlePlayerAction(game, currentPlayer);
+            break;
         }
-
     } else {
-        std::string action;
-        std::cin >> action;
+        Available_actions action = get_action_from_input();
 
-        if (action == "fold" || action == "f") {
+        switch (action) {
+        case Available_actions::Fold:
             currentPlayer->fold();
-            return;
-        } else if (action == "call" || action == "c") {
+            break;
+        case Available_actions::Call:
             if (amountToCall > currentPlayer->getChips()) { amountToCall = currentPlayer->getChips(); }
             currentPlayer->deductChips(amountToCall);
             game.pot += amountToCall;
             currentPlayer->setCurrentBet(game.currentBet);
-        } else if (action == "raise" || action == "r") {
-            double raiseAmount = 0;
+            break;
+        case Available_actions::Raise:
             std::cin >> raiseAmount;
 
             raiseAmount = raiseHelper(raiseAmount);
 
-            double totalBet = game.currentBet + raiseAmount;
+            totalBet = game.currentBet + raiseAmount;
             if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
 
-            double addedAmount = totalBet - currentPlayer->getCurrentBet();
+            addedAmount = totalBet - currentPlayer->getCurrentBet();
             currentPlayer->deductChips(addedAmount);
             game.pot += addedAmount;
             currentPlayer->setCurrentBet(totalBet);
             game.currentBet = totalBet;
-
-        } else {
+            break;
+        default:
             handlePlayerAction(game, currentPlayer);
+            break;
         }
     }
 }
 
 void executeBettingRound(PokerGame &game)
 {
-
     Agent *currentPlayer =
       game.playerIsDealer ? static_cast<Agent *>(game.player.get()) : static_cast<Agent *>(game.bot.get());
     Agent *opponent =
