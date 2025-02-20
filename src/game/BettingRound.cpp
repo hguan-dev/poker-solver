@@ -75,23 +75,16 @@ void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 
 void executeBettingRound(PokerGame &game)
 {
-    Agent *currentPlayer;
-    Agent *opponent;
+    Agent &currentPlayer = game.playerIsDealer ? static_cast<Agent &>(*game.player) : static_cast<Agent &>(*game.bot);
+    Agent &opponent = game.playerIsDealer ? static_cast<Agent &>(*game.bot) : static_cast<Agent &>(*game.player);
 
-    if (game.playerIsDealer) {
-        currentPlayer = game.player.get();
-        opponent = game.bot.get();
-    } else {
-        currentPlayer = game.bot.get();
-        opponent = game.player.get();
-    }
     bool bettingComplete = false;
     bool firstRound = true;
 
     while (!bettingComplete) {
-        if (currentPlayer->isActive()) {
-            if (currentPlayer == game.player.get()) {
-                handlePlayerAction(game, *currentPlayer);
+        if (currentPlayer.isActive()) {
+            if (&currentPlayer == game.player.get()) {
+                handlePlayerAction(game, currentPlayer);
             } else {
                 game.bot->makeMove(game.pot, game.currentBet);
             }
@@ -99,8 +92,8 @@ void executeBettingRound(PokerGame &game)
 
         std::swap(currentPlayer, opponent);
 
-        if ((!opponent->isActive() || !currentPlayer->isActive())
-            || (currentPlayer->getCurrentBet() == game.currentBet && opponent->getCurrentBet() == game.currentBet
+        if ((!opponent.isActive() || !currentPlayer.isActive())
+            || (currentPlayer.getCurrentBet() == game.currentBet && opponent.getCurrentBet() == game.currentBet
                 && !firstRound)) {
             bettingComplete = true;
         }
