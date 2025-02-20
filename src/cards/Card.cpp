@@ -3,11 +3,11 @@
 
 Card::Card(const char &rank, const char &suit) : rank(rank), suit(suit) {}
 
-char Card::getRank() const
+const char &Card::getRank() const
 {
     return rank;
 }
-char Card::getSuit() const
+const char &Card::getSuit() const
 {
     return suit;
 }
