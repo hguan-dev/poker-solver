@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Card.hpp"
+#include <algorithm>
 #include <string>
 #include <vector>
+
 
 class HandEvaluator
 {
