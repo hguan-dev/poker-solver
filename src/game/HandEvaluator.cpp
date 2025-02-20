@@ -3,7 +3,6 @@
 #include <map>
 #include <sstream>
 
-// Simple rank-to-string helper for debugging
 static std::string rankToString(HandEvaluator::HandRank rank)
 {
     switch (rank) {
@@ -42,7 +41,6 @@ bool HandEvaluator::HandResult::operator>(const HandResult &other) const
     if (rank > other.rank) { return true; }
     if (rank < other.rank) { return false; }
 
-    // Apparently > operation on vectors compare lexicographically
     if (identifier != other.identifier) { return identifier > other.identifier; }
     return highCards > other.highCards;
 }
@@ -123,7 +121,6 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
 
     std::map<int, int> freq;
     for (int r : ranks) { freq[r]++; }
-    // Sort them by (count DESC, rank DESC)
     std::vector<std::pair<int, int>> freqVec;
     freqVec.reserve(freq.size());
     for (auto &[val, count] : freq) { freqVec.push_back({ count, val }); }
@@ -141,9 +138,7 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
     auto pickKickers = [&](const std::initializer_list<int> &used, int howMany) {
         std::vector<int> picked;
         for (int r : ranksDesc) {
-            if (std::find(used.begin(), used.end(), r) != used.end()) {
-                continue;// skip ranks we've used in the main combo
-            }
+            if (std::find(used.begin(), used.end(), r) != used.end()) { continue; }
             picked.push_back(r);
             if ((int)picked.size() == howMany) { break; }
         }
@@ -160,13 +155,11 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
         return fCards;
     };
 
-    // c0/r0 is the top frequency + rank, c1/r1 the second
     int c0 = freqVec[0].first;
     int r0 = freqVec[0].second;
     int c1 = (freqVec.size() > 1) ? freqVec[1].first : 0;
     int r1 = (freqVec.size() > 1) ? freqVec[1].second : 0;
 
-    // Royal / Straight Flush
     if (hasFlush) {
         auto flushCards = getFlushCards();
         int flushStraightHighCard = 0;
@@ -209,7 +202,6 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
     if (c0 == 3) {
         result.rank = HandRank::THREE_OF_A_KIND;
         result.identifier = { r0 };
-        // pick 2 kickers
         result.highCards = pickKickers({ r0 }, 2);
         return result;
     }
