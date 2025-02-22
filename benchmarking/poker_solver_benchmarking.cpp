@@ -37,14 +37,16 @@ int main()
     }
 
     double avg_time = tot / num_runs;
+    double avg_time_per_game = tot / (num_runs * 10);
     double max_time = *std::max_element(durations_ns.begin(), durations_ns.end());
     double min_time = *std::min_element(durations_ns.begin(), durations_ns.end());
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "=== Poker Solver Benchmarking ===\n";
+    std::cout << "---- Poker Solver Benchmarking ----";
     std::cout << "Total Runs: " << num_runs << "\n";
     std::cout << "Min Execution Time: " << min_time << " ns\n";
-    std::cout << "Mean Execution Time: " << avg_time << " ns\n";
-    std::cout << "Max Execution Time: " << max_time << " ns\n";    
+    std::cout << "Average Execution Time: " << avg_time << " ns\n";
+    std::cout << "Max Execution Time: " << max_time << " ns\n";   
+    std::cout << "Average Execution Time (per round): " << avg_time_per_game << " ns\n";
     return 0;
 }

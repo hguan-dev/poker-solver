@@ -51,4 +51,5 @@ gdb:
 
 benchmark: 
 	@echo "Running Poker Solver Benchmark..."
+	@cp input.txt build/bin/input.txt || echo "Warning: input.txt not found!"
 	@cd build/bin && ./poker_solver_benchmarking
