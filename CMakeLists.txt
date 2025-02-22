@@ -45,6 +45,7 @@ if(BENCHMARK_SOURCES)
     GTest::gtest_main 
     pybind11::pybind11 
     pthread
+    fmt::fmt
 )
     set_target_properties(poker_solver_benchmarking PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
