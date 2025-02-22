@@ -1,6 +1,6 @@
 #include "PokerGame.hpp"
 #include "BettingRound.hpp"
-#include <algorithm>
+#include "HandEvaluator.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
