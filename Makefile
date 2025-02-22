@@ -1,4 +1,4 @@
-.PHONY: build cppinstall test cpptest clean lint cpplint cppformat format gdb
+.PHONY: build cppinstall test cpptest clean lint cpplint cppformat format gdb benchmark
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
@@ -6,6 +6,8 @@ ifeq ($(DEBUG), 1)
 else
     RELEASE_TYPE = Release
 endif
+
+
 
 build: cppinstall
 	mkdir -p build
@@ -46,3 +48,7 @@ cppformat:
 gdb:
 	$(MAKE) build DEBUG=1
 	cd build/bin && gdb poker_solver
+
+benchmark: 
+	@echo "Running Poker Solver Benchmark..."
+	@cd build/bin && ./poker_solver_benchmarking
