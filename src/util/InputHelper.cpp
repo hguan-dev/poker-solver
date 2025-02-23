@@ -19,3 +19,16 @@ ACTIONS get_action_from_input()
         throw std::invalid_argument("Invalid action");
     }
 }
+
+double raiseHelper()
+{
+    double raiseAmount;
+    std::cin >> raiseAmount;
+
+    while (std::cin.fail() || raiseAmount <= 0) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin >> raiseAmount;
+    }
+    return raiseAmount;
+}

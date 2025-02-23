@@ -1,19 +1,8 @@
 #include "BettingRound.hpp"
 #include "./util/InputHelper.hpp"
 #include <algorithm>
-#include <iostream>
 #include <limits>
 #include <string>
-
-double raiseHelper(double raiseAmount)
-{
-    while (std::cin.fail() || raiseAmount <= 0) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cin >> raiseAmount;
-    }
-    return raiseAmount;
-}
 
 void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
 {
@@ -29,9 +18,7 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
         case ACTIONS::CHECK:
             break;
         case ACTIONS::BET:
-            std::cin >> raiseAmount;
-
-            raiseAmount = raiseHelper(raiseAmount);
+            raiseAmount = raiseHelper();
 
             totalBet = game.currentBet + raiseAmount;
             if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
@@ -60,9 +47,7 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
             currentPlayer->setCurrentBet(game.currentBet);
             break;
         case ACTIONS::RAISE:
-            std::cin >> raiseAmount;
-
-            raiseAmount = raiseHelper(raiseAmount);
+            raiseAmount = raiseHelper();
 
             totalBet = game.currentBet + raiseAmount;
             if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
