@@ -75,32 +75,43 @@ void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 
 void executeBettingRound(PokerGame &game)
 {
-    Agent &currentPlayer = game.playerIsDealer ? static_cast<Agent &>(*game.player) : static_cast<Agent &>(*game.bot);
-    Agent &opponent = game.playerIsDealer ? static_cast<Agent &>(*game.bot) : static_cast<Agent &>(*game.player);
+    Agent &player = *game.player;
+    Agent &bot = *game.bot;
 
+    bool playerTurn = game.playerIsDealer;// True if player starts, false if bot starts
     bool bettingComplete = false;
     bool firstRound = true;
 
     while (!bettingComplete) {
+        Agent &currentPlayer = playerTurn ? player : bot;
+        Agent &opponent = playerTurn ? bot : player;
+
         if (currentPlayer.isActive()) {
-            if (&currentPlayer == game.player.get()) {
+            if (&currentPlayer == &player) {
                 handlePlayerAction(game, currentPlayer);
             } else {
-                game.bot->makeMove(game.pot, game.currentBet);
+                // Check if currentPlayer is actually a Bot
+                Bot *botPlayer = dynamic_cast<Bot *>(&currentPlayer);
+                if (botPlayer) {
+                    botPlayer->makeMove(game.pot, game.currentBet);
+                } else {
+                    throw std::runtime_error("Expected bot to make a move, but currentPlayer is not a Bot.");
+                }
             }
         }
 
-        std::swap(currentPlayer, opponent);
+        playerTurn = !playerTurn;// Toggle turn
 
         if ((!opponent.isActive() || !currentPlayer.isActive())
             || (currentPlayer.getCurrentBet() == game.currentBet && opponent.getCurrentBet() == game.currentBet
                 && !firstRound)) {
             bettingComplete = true;
         }
+
         firstRound = false;
     }
 
     game.setCurrentBet(0);
-    game.player->setCurrentBet(0);
-    game.bot->setCurrentBet(0);
+    player.setCurrentBet(0);
+    bot.setCurrentBet(0);
 }
