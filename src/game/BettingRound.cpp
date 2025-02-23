@@ -1,18 +1,7 @@
 #include "BettingRound.hpp"
 #include "./util/InputHelper.hpp"
 #include <algorithm>
-#include <iostream>
 #include <limits>
-
-double raiseHelper(double raiseAmount)
-{
-    while (std::cin.fail() || raiseAmount <= 0) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cin >> raiseAmount;
-    }
-    return raiseAmount;
-}
 
 void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 {
@@ -28,8 +17,7 @@ void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
         case ACTIONS::CHECK:
             break;
         case ACTIONS::BET:
-            std::cin >> raiseAmount;
-            raiseAmount = raiseHelper(raiseAmount);
+            raiseAmount = raiseHelper();
             totalBet = game.currentBet + raiseAmount;
             if (totalBet > currentPlayer.getChips()) { totalBet = currentPlayer.getChips(); }
             addedAmount = totalBet - currentPlayer.getCurrentBet();
@@ -56,8 +44,7 @@ void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
             currentPlayer.setCurrentBet(game.currentBet);
             break;
         case ACTIONS::RAISE:
-            std::cin >> raiseAmount;
-            raiseAmount = raiseHelper(raiseAmount);
+            raiseAmount = raiseHelper();
             totalBet = game.currentBet + raiseAmount;
             if (totalBet > currentPlayer.getChips()) { totalBet = currentPlayer.getChips(); }
             addedAmount = totalBet - currentPlayer.getCurrentBet();
@@ -78,7 +65,7 @@ void executeBettingRound(PokerGame &game)
     Agent &player = *game.player;
     Agent &bot = *game.bot;
 
-    bool playerTurn = game.playerIsDealer;// True if player starts, false if bot starts
+    bool playerTurn = game.playerIsDealer;
     bool bettingComplete = false;
     bool firstRound = true;
 
@@ -90,7 +77,6 @@ void executeBettingRound(PokerGame &game)
             if (&currentPlayer == &player) {
                 handlePlayerAction(game, currentPlayer);
             } else {
-                // Check if currentPlayer is actually a Bot
                 Bot *botPlayer = dynamic_cast<Bot *>(&currentPlayer);
                 if (botPlayer) {
                     botPlayer->makeMove(game.pot, game.currentBet);
@@ -100,7 +86,7 @@ void executeBettingRound(PokerGame &game)
             }
         }
 
-        playerTurn = !playerTurn;// Toggle turn
+        playerTurn = !playerTurn;
 
         if ((!opponent.isActive() || !currentPlayer.isActive())
             || (currentPlayer.getCurrentBet() == game.currentBet && opponent.getCurrentBet() == game.currentBet
