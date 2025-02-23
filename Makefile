@@ -1,4 +1,4 @@
-.PHONY: build cppinstall test cpptest clean lint cpplint cppformat format gdb
+.PHONY: build cppinstall test cpptest clean lint cpplint cppformat format gdb benchmark
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
@@ -46,3 +46,8 @@ cppformat:
 gdb:
 	$(MAKE) build DEBUG=1
 	cd build/bin && gdb poker_solver
+
+benchmark: build 
+	@echo "Running Poker Solver Benchmark..."
+	@cp input.txt build/bin/input.txt || echo "Warning: input.txt not found!"
+	@cd build/bin && ./poker_solver_benchmarking

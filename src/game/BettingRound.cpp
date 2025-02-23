@@ -2,11 +2,10 @@
 #include "./util/InputHelper.hpp"
 #include <algorithm>
 #include <limits>
-#include <string>
 
-void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
+void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 {
-    double amountToCall = game.currentBet - currentPlayer->getCurrentBet();
+    double amountToCall = game.currentBet - currentPlayer.getCurrentBet();
 
     double raiseAmount = 0;
     double totalBet, addedAmount;
@@ -19,14 +18,12 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
             break;
         case ACTIONS::BET:
             raiseAmount = raiseHelper();
-
             totalBet = game.currentBet + raiseAmount;
-            if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
-
-            addedAmount = totalBet - currentPlayer->getCurrentBet();
-            currentPlayer->deductChips(addedAmount);
+            if (totalBet > currentPlayer.getChips()) { totalBet = currentPlayer.getChips(); }
+            addedAmount = totalBet - currentPlayer.getCurrentBet();
+            currentPlayer.deductChips(addedAmount);
             game.pot += addedAmount;
-            currentPlayer->setCurrentBet(totalBet);
+            currentPlayer.setCurrentBet(totalBet);
             game.currentBet = totalBet;
             break;
         default:
@@ -38,24 +35,22 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
 
         switch (action) {
         case ACTIONS::FOLD:
-            currentPlayer->fold();
+            currentPlayer.fold();
             break;
         case ACTIONS::CALL:
-            if (amountToCall > currentPlayer->getChips()) { amountToCall = currentPlayer->getChips(); }
-            currentPlayer->deductChips(amountToCall);
+            if (amountToCall > currentPlayer.getChips()) { amountToCall = currentPlayer.getChips(); }
+            currentPlayer.deductChips(amountToCall);
             game.pot += amountToCall;
-            currentPlayer->setCurrentBet(game.currentBet);
+            currentPlayer.setCurrentBet(game.currentBet);
             break;
         case ACTIONS::RAISE:
             raiseAmount = raiseHelper();
-
             totalBet = game.currentBet + raiseAmount;
-            if (totalBet > currentPlayer->getChips()) { totalBet = currentPlayer->getChips(); }
-
-            addedAmount = totalBet - currentPlayer->getCurrentBet();
-            currentPlayer->deductChips(addedAmount);
+            if (totalBet > currentPlayer.getChips()) { totalBet = currentPlayer.getChips(); }
+            addedAmount = totalBet - currentPlayer.getCurrentBet();
+            currentPlayer.deductChips(addedAmount);
             game.pot += addedAmount;
-            currentPlayer->setCurrentBet(totalBet);
+            currentPlayer.setCurrentBet(totalBet);
             game.currentBet = totalBet;
             break;
         default:
@@ -67,35 +62,42 @@ void handlePlayerAction(PokerGame &game, Agent *currentPlayer)
 
 void executeBettingRound(PokerGame &game)
 {
-    Agent *currentPlayer =
-      game.playerIsDealer ? static_cast<Agent *>(game.player.get()) : static_cast<Agent *>(game.bot.get());
-    Agent *opponent =
-      game.playerIsDealer ? static_cast<Agent *>(game.bot.get()) : static_cast<Agent *>(game.player.get());
+    Agent &player = *game.player;
+    Agent &bot = *game.bot;
 
+    bool playerTurn = game.playerIsDealer;
     bool bettingComplete = false;
     bool firstRound = true;
 
     while (!bettingComplete) {
-        if (currentPlayer->isActive()) {
-            if (currentPlayer == game.player.get()) {
+        Agent &currentPlayer = playerTurn ? player : bot;
+        Agent &opponent = playerTurn ? bot : player;
 
+        if (currentPlayer.isActive()) {
+            if (&currentPlayer == &player) {
                 handlePlayerAction(game, currentPlayer);
             } else {
-                game.bot->makeMove(game.pot, game.currentBet);
+                Bot *botPlayer = dynamic_cast<Bot *>(&currentPlayer);
+                if (botPlayer) {
+                    botPlayer->makeMove(game.pot, game.currentBet);
+                } else {
+                    throw std::runtime_error("Expected bot to make a move, but currentPlayer is not a Bot.");
+                }
             }
         }
 
-        std::swap(currentPlayer, opponent);
+        playerTurn = !playerTurn;
 
-        if ((!opponent->isActive() || !currentPlayer->isActive())
-            || (currentPlayer->getCurrentBet() == game.currentBet && opponent->getCurrentBet() == game.currentBet
+        if ((!opponent.isActive() || !currentPlayer.isActive())
+            || (currentPlayer.getCurrentBet() == game.currentBet && opponent.getCurrentBet() == game.currentBet
                 && !firstRound)) {
             bettingComplete = true;
         }
+
         firstRound = false;
     }
 
     game.setCurrentBet(0);
-    game.player->setCurrentBet(0);
-    game.bot->setCurrentBet(0);
+    player.setCurrentBet(0);
+    bot.setCurrentBet(0);
 }
