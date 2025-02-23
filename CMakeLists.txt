@@ -25,34 +25,9 @@ target_include_directories(poker_solver PRIVATE src src/cards src/game src/playe
 
 target_link_libraries(poker_solver PRIVATE pybind11::pybind11 fmt::fmt)
 
-file(GLOB_RECURSE BENCHMARK_SOURCES benchmarking/*.cpp)
-file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp src/util/*.cpp)
 set_target_properties(poker_solver PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-
-if(BENCHMARK_SOURCES)
-    add_executable(poker_solver_benchmarking ${BENCHMARK_SOURCES} ${IMPLEMENTATION_SOURCES})
-    target_include_directories(poker_solver_benchmarking PRIVATE 
-        src 
-        src/cards 
-        src/game 
-        src/players 
-        ${GTest_INCLUDE_DIRS}
-    )
-
-    target_link_libraries(poker_solver_benchmarking PRIVATE 
-    GTest::gtest 
-    GTest::gtest_main 
-    pybind11::pybind11 
-    pthread
-    fmt::fmt
-)
-    set_target_properties(poker_solver_benchmarking PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-endif()
-
-
 file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
+file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp src/util/*.cpp)
 
 if(TEST_SOURCES)
     add_executable(poker_solver_tests ${TEST_SOURCES} ${IMPLEMENTATION_SOURCES})
@@ -83,5 +58,4 @@ if(TEST_SOURCES)
 else()
     message(WARNING "No test files found in the 'src/tests/' directory.")
 endif()
-
 
