@@ -46,5 +46,5 @@ RUN mkdir -p build \
     && cmake --build .
 
 # Set the default command to run the solver
-CMD ["./build/bin/poker_solver"]
+CMD ["./build/bin/poker_solver_benchmarking"]
 
