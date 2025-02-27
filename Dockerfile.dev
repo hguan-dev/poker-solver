@@ -1,28 +1,35 @@
-# Use an official C++ image with necessary tools
+# Use an official C++ image as a base
 FROM gcc:latest
 
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     cmake \
     ninja-build \
     python3-pip \
     python3-venv \
+    python3-full \
+    pipx \
     clang \
     clang-tidy \
     clang-format \
     gdb \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Conan and Ninja
-RUN pip3 install --upgrade pip
-RUN pip3 install --upgrade conan pipx
-RUN pipx install --force ninja
+# Ensure pipx can run globally
+ENV PATH="/root/.local/bin:$PATH"
+
+# Use pipx to install Conan & Ninja
+RUN pipx ensurepath && \
+    pipx install conan && \
+    pipx install ninja
+
+# Detect Conan profile
 RUN conan profile detect --force
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy project files into the container
+# Copy the project files into the container
 COPY . .
 
 # Run Conan install
