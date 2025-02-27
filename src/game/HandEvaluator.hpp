@@ -1,6 +1,5 @@
 #pragma once
 
-#include "7462.cpp"
 #include "Card.hpp"
 #include "HandHashes.hpp"
 #include <algorithm>
@@ -40,7 +39,7 @@ class HandEvaluator
     };
 
     HandResult evaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
-    std::string fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
+    int fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
 
   private:
     std::vector<Card> mergeHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
