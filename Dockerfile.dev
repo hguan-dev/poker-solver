@@ -1,0 +1,43 @@
+# Use an official C++ image with necessary tools
+FROM gcc:latest
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    cmake \
+    ninja-build \
+    python3-pip \
+    python3-venv \
+    clang \
+    clang-tidy \
+    clang-format \
+    gdb \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Conan and Ninja
+RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade conan pipx
+RUN pipx install --force ninja
+RUN conan profile detect --force
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy project files into the container
+COPY . .
+
+# Run Conan install
+RUN conan install . --build=missing --output-folder=build -s build_type=Release
+
+# Configure and build using CMake & Ninja
+RUN mkdir -p build \
+    && cd build \
+    && cmake .. \
+        -DCMAKE_TOOLCHAIN_FILE=../build/conan_toolchain.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        -G Ninja \
+    && cmake --build .
+
+# Set the default command to run the solver
+CMD ["./build/bin/poker_solver"]
+
