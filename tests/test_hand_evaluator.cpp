@@ -106,3 +106,105 @@ TEST(HandEvaluatorTest, DifferentKickerComparison)
     EXPECT_GT(fast_result1, fast_result2);
 }
 
+TEST(HandEvaluatorTest, BestHandSelection)
+{
+    HandEvaluator evaluator;
+    cardVec hand = { Card("K", "Diamonds"), Card("K", "Spades") };
+    cardVec communityCards = {
+        Card("T", "Hearts"), Card("J", "Hearts"), Card("Q", "Hearts"), Card("K", "Hearts"), Card("A", "Hearts")
+    };
+
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    EXPECT_EQ(result.rank, HandEvaluator::ROYAL_FLUSH);
+    
+    evaluator.fastEvaluateHand(hand, communityCards);
+}
+
+TEST(HandEvaluatorTest, CompareEqualHands)
+{
+    HandEvaluator evaluator;
+    cardVec hand1 = { Card("A", "Diamonds"), Card("K", "Spades") };
+    cardVec hand2 = { Card("A", "Hearts"), Card("K", "Clubs") };
+    cardVec communityCards = {
+        Card("2", "Hearts"), Card("3", "Clubs"), Card("4", "Diamonds"), Card("5", "Hearts"), Card("7", "Clubs")
+    };
+
+    auto result1 = evaluator.evaluateHand(hand1, communityCards);
+    auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    EXPECT_EQ(result1, result2);
+    
+    int fast_result1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    int fast_result2 = evaluator.fastEvaluateHand(hand2, communityCards);
+    EXPECT_EQ(fast_result1, fast_result2);
+}
+
+TEST(HandEvaluatorTest, HighCard)
+{
+    HandEvaluator evaluator;
+    cardVec hand = { Card("A", "Diamonds"), Card("K", "Spades") };
+    cardVec communityCards = {
+        Card("7", "Hearts"), Card("9", "Clubs"), Card("Q", "Diamonds"), Card("4", "Hearts"), Card("2", "Clubs")
+    };
+
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    EXPECT_EQ(result.rank, HandEvaluator::HIGH_CARD);
+    EXPECT_EQ(result.identifier[0], 14);
+    EXPECT_EQ(result.highCards[0], 13);
+    EXPECT_EQ(result.highCards[1], 12);   
+    EXPECT_EQ(result.highCards[2], 9);   
+    EXPECT_EQ(result.highCards[3], 7);   
+
+    evaluator.fastEvaluateHand(hand, communityCards);
+}
+
+TEST(HandEvaluatorTest, ThreeOfAKind)
+{
+    HandEvaluator evaluator;
+    cardVec hand = { Card("Q", "Diamonds"), Card("Q", "Spades") };
+    cardVec communityCards = {
+        Card("Q", "Clubs"), Card("A", "Diamonds"), Card("7", "Clubs"), Card("2", "Hearts"), Card("5", "Diamonds")
+    };
+
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    EXPECT_EQ(result.rank, HandEvaluator::THREE_OF_A_KIND);
+    EXPECT_EQ(result.identifier[0], 12);
+    EXPECT_EQ(result.highCards[0], 14);  
+    EXPECT_EQ(result.highCards[1], 7);   
+    
+    evaluator.fastEvaluateHand(hand, communityCards);
+}
+
+TEST(HandEvaluatorTest, TwoPair)
+{
+    HandEvaluator evaluator;
+    cardVec hand = { Card("K", "Diamonds"), Card("K", "Spades") };
+    cardVec communityCards = {
+        Card("9", "Hearts"), Card("9", "Clubs"), Card("A", "Diamonds"), Card("4", "Hearts"), Card("2", "Clubs")
+    };
+
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    EXPECT_EQ(result.rank, HandEvaluator::TWO_PAIR);
+    EXPECT_EQ(result.identifier[0], 13); 
+    EXPECT_EQ(result.identifier[1], 9);  
+    EXPECT_EQ(result.highCards[0], 14);
+    
+    evaluator.fastEvaluateHand(hand, communityCards);
+}
+
+TEST(HandEvaluatorTest, OnePair)
+{
+    HandEvaluator evaluator;
+    cardVec hand = { Card("A", "Diamonds"), Card("A", "Spades") };
+    cardVec communityCards = {
+        Card("7", "Hearts"), Card("9", "Clubs"), Card("Q", "Diamonds"), Card("4", "Hearts"), Card("2", "Clubs")
+    };
+
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    EXPECT_EQ(result.rank, HandEvaluator::ONE_PAIR);
+    EXPECT_EQ(result.identifier[0], 14); 
+    EXPECT_EQ(result.highCards[0], 12);
+    EXPECT_EQ(result.highCards[1], 9);
+    EXPECT_EQ(result.highCards[2], 7);
+    
+    evaluator.fastEvaluateHand(hand, communityCards);
+}
