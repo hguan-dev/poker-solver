@@ -1,5 +1,5 @@
 #include "BettingRound.hpp"
-#include "./util/InputHelper.hpp"
+#include "InputHelper.hpp"
 
 void handlePlayerAction(PokerGame &game, Agent &currentPlayer)
 {
