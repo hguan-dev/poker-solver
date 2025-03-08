@@ -18,4 +18,3 @@ class Deck
     bool isEmpty() const;
     int getLength() const;
 };
-
