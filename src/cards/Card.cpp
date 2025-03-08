@@ -55,3 +55,10 @@ std::string Card::toString() const
 
     return fmt::format("{} of {}", rank, suit_str);
 }
+
+int Card::getHash() const
+{
+    int rankValue = getValue();
+    int suitValue = (suit == 'H' ? 0 : suit == 'D' ? 1 : suit == 'C' ? 2 : 3);
+    return ((rankValue - 2) << 2) + suitValue;
+}

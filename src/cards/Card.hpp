@@ -20,6 +20,8 @@ class Card
         return !(*this == other);
     }
 
+    int getHash() const;
+
   private:
     char rank;
     char suit;

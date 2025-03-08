@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Card.hpp"
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -43,6 +42,10 @@ class HandEvaluator
     bool isFlush(const std::vector<Card> &allCards, char &flushSuit);
 
     bool isStraight(const std::vector<int> &ranks, int &highCard);
+
+    int fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
+
+    int hashQuinaryResult(const unsigned char quinary[]);
 
     HandResult determineBestHand(const std::vector<Card> &allCards);
 };
