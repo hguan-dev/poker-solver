@@ -1,4 +1,4 @@
-.PHONY: build cppinstall test cpptest clean lint cpplint cppformat format gdb benchmark
+.PHONY: build cppinstall test cpptest clean lint cpplint cppformat format gdb benchmark prof
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
@@ -51,3 +51,19 @@ benchmark: build
 	@echo "Running Poker Solver Benchmark..."
 	@cp input.txt build/bin/input.txt || echo "Warning: input.txt not found!"
 	@cd build/bin && ./poker_solver_benchmarking
+
+prof: 
+	@echo "Building Poker Solver with Profiling..."
+	mkdir -p build
+	cd build && cmake .. \
+		-DCMAKE_TOOLCHAIN_FILE=../build/conan_toolchain.cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DPROFILING=ON \
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+		-G Ninja
+	cd build && cmake --build .
+	@echo "Running Poker Solver with Profiling..."
+	@cd build/bin && ./poker_solver
+	@echo "Generating profiling report..."
+	@cd build/bin && gprof poker_solver gmon.out > profile_report.txt
+	@echo "Profiling complete. See build/bin/profile_report.txt"
