@@ -62,8 +62,8 @@ prof:
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
 		-G Ninja
 	cd build && cmake --build .
-	@echo "Running Poker Solver with Profiling..."
-	@cd build/bin && ./poker_solver
+	@echo "Running Poker Solver Benchmark with Profiling..."
+	@cd build/bin && ./poker_solver_benchmarking
 	@echo "Generating profiling report..."
 	@cd build/bin && gprof poker_solver gmon.out > profile_report.txt
 	@echo "Profiling complete. See build/bin/profile_report.txt"
