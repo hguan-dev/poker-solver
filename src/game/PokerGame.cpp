@@ -145,8 +145,8 @@ void PokerGame::payout()
 {
     HandEvaluator evaluator;
 
-    auto heroResult = evaluator.evaluateHand(player->getHand(), communityCards);
-    auto villainResult = evaluator.evaluateHand(bot->getHand(), communityCards);
+    auto heroResult = evaluator.fastEvaluateHand(player->getHand(), communityCards);
+    auto villainResult = evaluator.fastEvaluateHand(bot->getHand(), communityCards);
 
     if (heroResult == villainResult) {
         player->addChips(pot / 2);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Card.hpp"
+#include "HandHashes.hpp"
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -36,6 +37,7 @@ class HandEvaluator
     };
 
     HandResult evaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
+    int fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
 
   private:
     std::vector<Card> mergeHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
@@ -45,4 +47,6 @@ class HandEvaluator
     bool isStraight(const std::vector<int> &ranks, int &highCard);
 
     HandResult determineBestHand(const std::vector<Card> &allCards);
+
+    int hashQuinaryResult(const unsigned char quinary[]);
 };
