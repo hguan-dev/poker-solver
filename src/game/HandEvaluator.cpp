@@ -229,46 +229,52 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
     return result;
 }
 
-int HandEvaluator::fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards) {
+int HandEvaluator::fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards)
+{
     // Merge the player's hand and community cards into a single vector of 7 cards.
     std::vector<Card> fullHand = mergeHand(hand, communityCards);
     int cards[7] = { 0 };
     int suit_hash = 0;
-    
+
     // Step 1: Encode cards and compute suit hash
     for (int i = 0; i < 7; i++) {
-        int rankValue = fullHand[i].getValue() - 2; // Convert to 0-12 range
-        
+        int rankValue = fullHand[i].getValue() - 2;// Convert to 0-12 range
+
         // Convert suit character to numerical value (0-3)
         int suitValue;
         char suit = fullHand[i].getSuit();
-        switch(suit) {
-            case 'H': suitValue = 0; break;
-            case 'D': suitValue = 1; break;
-            case 'S': suitValue = 2; break;
-            case 'C': suitValue = 3; break;
-            default: suitValue = 0;
+        switch (suit) {
+        case 'H':
+            suitValue = 0;
+            break;
+        case 'D':
+            suitValue = 1;
+            break;
+        case 'S':
+            suitValue = 2;
+            break;
+        case 'C':
+            suitValue = 3;
+            break;
+        default:
+            suitValue = 0;
         }
-        
+
         cards[i] = (rankValue * 4) + suitValue;
-        
+
         // Compute suit hash
         suit_hash += (1 << (suitValue * 3));
     }
-    
+
     if (SUITS_TABLE[suit_hash]) {
         int suit_binary[4] = { 0 };
-        for (int i = 0; i < 7; i++) { 
-            suit_binary[cards[i] & 0x3] |= (1 << (cards[i] / 4)); 
-        }
+        for (int i = 0; i < 7; i++) { suit_binary[cards[i] & 0x3] |= (1 << (cards[i] / 4)); }
         return FLUSH_TABLE[suit_binary[SUITS_TABLE[suit_hash] - 1]];
     }
-    
+
     unsigned char quinary[13] = { 0 };
-    for (int i = 0; i < 7; i++) {
-        quinary[cards[i] / 4]++;
-    }
-    
+    for (int i = 0; i < 7; i++) { quinary[cards[i] / 4]++; }
+
     const int hash = hashQuinaryResult(quinary);
     return NOFLUSH_TABLE[hash];
 }
