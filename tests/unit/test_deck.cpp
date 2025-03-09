@@ -10,7 +10,6 @@ TEST(DeckTest, CreateDeck)
 TEST(DeckTest, PopTop)
 {
     Deck deck;
-    Card card = deck.popTop();
-    EXPECT_EQ(typeid(card), typeid(card));
+    deck.popTop();
     EXPECT_EQ(deck.getLength(), 51);
 }

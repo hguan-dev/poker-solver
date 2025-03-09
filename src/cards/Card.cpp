@@ -1,50 +1,57 @@
 #include "Card.hpp"
-#include <stdexcept>
-#include <string>
+#include <fmt/core.h>
 
-Card::Card(const std::string &rank, const std::string &suit) : rank(rank), suitStr(suit) {}
+Card::Card(const char &rank, const char &suit) : rank(rank), suit(suit) {}
 
-std::string Card::getRank() const
+const char &Card::getRank() const
 {
     return rank;
 }
-std::string Card::getSuit() const
+const char &Card::getSuit() const
 {
     return suitStr;
 }
 
 int Card::getValue() const
 {
-    if (rank == "A") return 14;
-    if (rank == "K") return 13;
-    if (rank == "Q") return 12;
-    if (rank == "J") return 11;
-    if (rank == "T") return 10;
 
-    try {
-        return std::stoi(rank);
-    } catch (const std::invalid_argument &) {
-        throw std::runtime_error("Invalid rank: " + rank);
+    switch (rank) {
+    case 'A':
+        return 14;
+    case 'K':
+        return 13;
+    case 'Q':
+        return 12;
+    case 'J':
+        return 11;
+    case 'T':
+        return 10;
+    default:
+        break;
     }
+
+    return rank - '0';
 }
 
 std::string Card::toString() const
 {
-    return rank + " of " + suitStr;
-}
+    std::string suit_str;
+    switch (suit) {
+    case 'H':
+        suit_str = "Hearts";
+        break;
+    case 'D':
+        suit_str = "Diamonds";
+        break;
+    case 'S':
+        suit_str = "Spades";
+        break;
+    case 'C':
+        suit_str = "Clubs";
+        break;
+    default:
+        return "Error. Invalid suit.\n";
+    }
 
-int Card::getHash() const
-{
-    int rankValue = getValue();
-    return ((rankValue - 2) << 2) + (suitStr == "H" ? 0 : suitStr == "D" ? 1 : suitStr == "C" ? 2 : 3);
-}
-
-bool Card::operator==(const Card &other) const
-{
-    return rank == other.rank && suitStr == other.suitStr;
-}
-
-bool Card::operator!=(const Card &other) const
-{
-    return !(*this == other);
+    return fmt::format("{} of {}", rank, suit_str);
 }

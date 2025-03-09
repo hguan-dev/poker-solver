@@ -1,28 +1,31 @@
 #include "HandEvaluator.hpp"
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <sstream>
 
-// Simple rank-to-string helper for debugging
 static std::string rankToString(HandEvaluator::HandRank rank)
 {
     switch (rank) {
-    case HandEvaluator::HIGH_CARD:
+    case HandEvaluator::HandRank::HIGH_CARD:
         return "High Card";
-    case HandEvaluator::ONE_PAIR:
+    case HandEvaluator::HandRank::ONE_PAIR:
         return "One Pair";
-    case HandEvaluator::TWO_PAIR:
+    case HandEvaluator::HandRank::TWO_PAIR:
         return "Two Pair";
-    case HandEvaluator::THREE_OF_A_KIND:
+    case HandEvaluator::HandRank::THREE_OF_A_KIND:
         return "Three of a Kind";
-    case HandEvaluator::STRAIGHT:
+    case HandEvaluator::HandRank::STRAIGHT:
         return "Straight";
-    case HandEvaluator::FLUSH:
+    case HandEvaluator::HandRank::FLUSH:
         return "Flush";
-    case HandEvaluator::FULL_HOUSE:
+    case HandEvaluator::HandRank::FULL_HOUSE:
         return "Full House";
-    case HandEvaluator::FOUR_OF_A_KIND:
+    case HandEvaluator::HandRank::FOUR_OF_A_KIND:
         return "Four of a Kind";
-    case HandEvaluator::STRAIGHT_FLUSH:
+    case HandEvaluator::HandRank::STRAIGHT_FLUSH:
         return "Straight Flush";
-    case HandEvaluator::ROYAL_FLUSH:
+    case HandEvaluator::HandRank::ROYAL_FLUSH:
         return "Royal Flush";
     default:
         return "Unknown Hand";
@@ -39,7 +42,6 @@ bool HandEvaluator::HandResult::operator>(const HandResult &other) const
     if (rank > other.rank) { return true; }
     if (rank < other.rank) { return false; }
 
-    // Apparently > operation on vectors compare lexicographically
     if (identifier != other.identifier) { return identifier > other.identifier; }
     return highCards > other.highCards;
 }
@@ -67,12 +69,12 @@ std::vector<Card> HandEvaluator::mergeHand(const std::vector<Card> &hand, const 
     }
     std::vector<Card> fullHand = hand;
     fullHand.insert(fullHand.end(), communityCards.begin(), communityCards.end());
-    return fullHand;
+    return std::move(fullHand);
 }
 
-bool HandEvaluator::isFlush(const std::vector<Card> &allCards, std::string &flushSuit)
+bool HandEvaluator::isFlush(const std::vector<Card> &allCards, char &flushSuit)
 {
-    std::map<std::string, int> suitCount;
+    std::map<char, int> suitCount;
     for (const auto &card : allCards) {
         suitCount[card.getSuit()]++;
         if (suitCount[card.getSuit()] >= 5) {
@@ -108,7 +110,7 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
 {
     HandResult result;
 
-    std::string flushSuit;
+    char flushSuit;
     bool hasFlush = isFlush(allCards, flushSuit);
 
     std::vector<int> ranks;
@@ -120,7 +122,6 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
 
     std::map<int, int> freq;
     for (int r : ranks) { freq[r]++; }
-    // Sort them by (count DESC, rank DESC)
     std::vector<std::pair<int, int>> freqVec;
     freqVec.reserve(freq.size());
     for (auto &[val, count] : freq) { freqVec.push_back({ count, val }); }
@@ -138,9 +139,7 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
     auto pickKickers = [&](const std::initializer_list<int> &used, int howMany) {
         std::vector<int> picked;
         for (int r : ranksDesc) {
-            if (std::find(used.begin(), used.end(), r) != used.end()) {
-                continue;// skip ranks we've used in the main combo
-            }
+            if (std::find(used.begin(), used.end(), r) != used.end()) { continue; }
             picked.push_back(r);
             if ((int)picked.size() == howMany) { break; }
         }
@@ -157,84 +156,72 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
         return fCards;
     };
 
-    // c0/r0 is the top frequency + rank, c1/r1 the second
     int c0 = freqVec[0].first;
     int r0 = freqVec[0].second;
     int c1 = (freqVec.size() > 1) ? freqVec[1].first : 0;
     int r1 = (freqVec.size() > 1) ? freqVec[1].second : 0;
 
-    // Royal / Straight Flush
     if (hasFlush) {
         auto flushCards = getFlushCards();
         int flushStraightHighCard = 0;
         bool flushHasStraight = isStraight(flushCards, flushStraightHighCard);
 
         if (flushHasStraight) {
-            result.rank = (flushStraightHighCard == 14) ? ROYAL_FLUSH : STRAIGHT_FLUSH;
+            result.rank = (flushStraightHighCard == 14) ? HandRank::ROYAL_FLUSH : HandRank::STRAIGHT_FLUSH;
             result.identifier = { flushStraightHighCard };
             return result;
         }
     }
 
-
-    // Quads
     if (c0 == 4) {
-        result.rank = FOUR_OF_A_KIND;
+        result.rank = HandRank::FOUR_OF_A_KIND;
         result.identifier = { r0 };
         result.highCards = pickKickers({ r0 }, 1);
         return result;
     }
 
-    // Full house
     if (c0 == 3 && c1 >= 2) {
-        result.rank = FULL_HOUSE;
+        result.rank = HandRank::FULL_HOUSE;
         result.identifier = { r0, r1 };
         return result;
     }
 
-    // Flush
     if (hasFlush) {
-        result.rank = FLUSH;
+        result.rank = HandRank::FLUSH;
         auto fCards = getFlushCards();
         result.identifier = { fCards[0] };
         result.highCards.insert(result.highCards.end(), fCards.begin(), fCards.end());
         return result;
     }
 
-    // Straight
     if (hasStraight) {
-        result.rank = STRAIGHT;
+        result.rank = HandRank::STRAIGHT;
         result.identifier = { topStraightRank };
         return result;
     }
 
-    // Trips
     if (c0 == 3) {
-        result.rank = THREE_OF_A_KIND;
+        result.rank = HandRank::THREE_OF_A_KIND;
         result.identifier = { r0 };
-        // pick 2 kickers
         result.highCards = pickKickers({ r0 }, 2);
         return result;
     }
 
-    // Two pair
     if (c0 == 2 && c1 == 2) {
-        result.rank = TWO_PAIR;
+        result.rank = HandRank::TWO_PAIR;
         result.identifier = { r0, r1 };
         result.highCards = pickKickers({ r0, r1 }, 1);
         return result;
     }
 
-    // Pair
     if (c0 == 2) {
-        result.rank = ONE_PAIR;
+        result.rank = HandRank::ONE_PAIR;
         result.identifier = { r0 };
         result.highCards = pickKickers({ r0 }, 3);
         return result;
     }
 
-    // High card
-    result.rank = HIGH_CARD;
+    result.rank = HandRank::HIGH_CARD;
     if (!ranksDesc.empty()) { result.identifier.push_back(ranksDesc[0]); }
     for (size_t i = 1; i < ranksDesc.size() && result.highCards.size() < 4; ++i) {
         result.highCards.push_back(ranksDesc[i]);

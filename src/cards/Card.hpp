@@ -5,17 +5,22 @@
 class Card
 {
   public:
-    Card(const std::string &rank, const std::string &suit);
-    std::string getRank() const;
-    std::string getSuit() const;
+    Card(const char &rank, const char &suit);
+    const char &getRank() const;
+    const char &getSuit() const;
     int getValue() const;
     std::string toString() const;
-    int getHash() const;
+    bool operator==(const Card &other) const
+    {
+        return rank == other.rank && suit == other.suit;
+    }
 
-    bool operator==(const Card &other) const;
-    bool operator!=(const Card &other) const;
+    bool operator!=(const Card &other) const
+    {
+        return !(*this == other);
+    }
 
   private:
-    std::string rank;
-    std::string suitStr;
+    char rank;
+    char suit;
 };
