@@ -44,6 +44,8 @@ TEST(HandEvaluatorTest, QuadsOverQuads)
 
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
 
     EXPECT_EQ(result1.highCards[0], 10);
     EXPECT_EQ(result2.highCards[0], 9);
@@ -52,6 +54,7 @@ TEST(HandEvaluatorTest, QuadsOverQuads)
     ASSERT_FALSE(result2.identifier.empty()) << "Identifier for result2 should not be empty";
 
     EXPECT_LT(result1, result2);
+    EXPECT_GT(fastresult1, fastresult2);
 }
 
 TEST(HandEvaluatorTest, Quads)
@@ -219,19 +222,18 @@ TEST(HandEvaluatorTest, TwoPairsWithDifferentKickers)
 
     cardVec communityCards = { Card('K', 'H'), Card('7', 'D'), Card('3', 'C'), Card('3', 'S'), Card('2', 'H') };
 
-    // Ace Kicker
     cardVec hand1 = { Card('K', 'D'), Card('A', 'C') };
-
-    // Queen Kicker
     cardVec hand2 = { Card('K', 'C'), Card('Q', 'S') };
 
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
     EXPECT_EQ(result1.rank, HandEvaluator::HandRank::TWO_PAIR);
     EXPECT_EQ(result2.rank, HandEvaluator::HandRank::TWO_PAIR);
 
     EXPECT_GT(result1, result2);
+    EXPECT_LT(fastresult1, fastresult2);
 }
 
 TEST(HandEvaluatorTest, FullHouseTripsTiebreaker)
@@ -249,10 +251,14 @@ TEST(HandEvaluatorTest, FullHouseTripsTiebreaker)
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
 
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
+
     EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
     EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
 
     EXPECT_GT(result1, result2);
+    EXPECT_LT(fastresult1, fastresult2);
 }
 
 TEST(HandEvaluatorTest, FullHousePairTiebreaker)
@@ -269,11 +275,13 @@ TEST(HandEvaluatorTest, FullHousePairTiebreaker)
 
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
     EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
     EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
 
     EXPECT_GT(result1, result2);
+    EXPECT_LT(fastresult1, fastresult2);
 }
 
 TEST(HandEvaluatorTest, FlushTiebreaker)
@@ -291,6 +299,9 @@ TEST(HandEvaluatorTest, FlushTiebreaker)
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
 
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
+
     ASSERT_FALSE(result1.identifier.empty());
     ASSERT_FALSE(result2.identifier.empty());
 
@@ -298,9 +309,11 @@ TEST(HandEvaluatorTest, FlushTiebreaker)
     EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FLUSH);
 
     EXPECT_LT(result1, result2);
+    EXPECT_GT(fastresult1, fastresult2);
 }
 
-TEST(HandEvaluatorTest, FiveCardStraightFlush) {
+TEST(HandEvaluatorTest, FiveCardStraightFlush)
+{
     HandEvaluator evaluator;
     cardVec hand = { Card('6', 'D'), Card('7', 'D') };
     cardVec communityCards = { Card('8', 'D'), Card('9', 'D'), Card('T', 'D') };
@@ -310,92 +323,110 @@ TEST(HandEvaluatorTest, FiveCardStraightFlush) {
     EXPECT_EQ(result.identifier[0], 10);
 }
 
-TEST(HandEvaluatorTest, FourOfAKindVsFullHouse) {
+TEST(HandEvaluatorTest, FourOfAKindVsFullHouse)
+{
     HandEvaluator evaluator;
     cardVec communityCards = { Card('A', 'H'), Card('A', 'D'), Card('A', 'C'), Card('K', 'D'), Card('K', 'H') };
-    
+
     // Four Aces
     cardVec hand1 = { Card('A', 'S'), Card('Q', 'C') };
-    
+
     // Full House (Kings full of Aces)
     cardVec hand2 = { Card('K', 'S'), Card('2', 'C') };
-    
+
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
+
+
     EXPECT_GT(result1, result2);
+    EXPECT_LT(fastresult1, fastresult2);
 }
 
-TEST(HandEvaluatorTest, StraightVsFlush) {
+TEST(HandEvaluatorTest, StraightVsFlush)
+{
     HandEvaluator evaluator;
     cardVec communityCards = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('T', 'D'), Card('J', 'S') };
-    
+
     // Straight
     cardVec hand1 = { Card('Q', 'D'), Card('K', 'C') };
-    
+
     // Flush
     cardVec hand2 = { Card('2', 'H'), Card('A', 'H') };
-    
+
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    
+
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
+
     EXPECT_LT(result1, result2);
+    EXPECT_GT(fastresult1, fastresult2);
 }
 
-TEST(HandEvaluatorTest, SameRankDifferentSuits) {
+TEST(HandEvaluatorTest, SameRankDifferentSuits)
+{
     HandEvaluator evaluator;
     // The suits shouldn't affect the ranking
     cardVec hand1 = { Card('A', 'H'), Card('K', 'H') };
     cardVec hand2 = { Card('A', 'S'), Card('K', 'S') };
     cardVec communityCards = { Card('Q', 'D'), Card('J', 'C'), Card('T', 'H'), Card('9', 'S'), Card('8', 'D') };
-    
+
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    
+
     EXPECT_EQ(result1.rank, result2.rank);
     EXPECT_EQ(result1, result2);
 }
 
-TEST(HandEvaluatorTest, TieFullHouse) {
+TEST(HandEvaluatorTest, TieFullHouse)
+{
     HandEvaluator evaluator;
     cardVec communityCards = { Card('Q', 'D'), Card('Q', 'S'), Card('Q', 'H'), Card('J', 'D'), Card('J', 'H') };
-    
+
     cardVec hand1 = { Card('A', 'S'), Card('K', 'C') };
     cardVec hand2 = { Card('A', 'H'), Card('K', 'D') };
-    
+
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    
+
     EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
     EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
     EXPECT_EQ(result1, result2);
 }
 
-TEST(HandEvaluatorTest, LowStraightWithHighCard) {
+TEST(HandEvaluatorTest, LowStraightWithHighCard)
+{
     HandEvaluator evaluator;
     cardVec hand = { Card('A', 'H'), Card('2', 'D') };
     cardVec communityCards = { Card('3', 'S'), Card('4', 'C'), Card('5', 'H'), Card('K', 'D'), Card('Q', 'S') };
-    
+
     auto result = evaluator.evaluateHand(hand, communityCards);
-    
+
     EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT);
-    EXPECT_EQ(result.identifier[0], 5); // Highest card in the straight is 5
+    EXPECT_EQ(result.identifier[0], 5);// Highest card in the straight is 5
 }
 
-TEST(HandEvaluatorTest, MultipleFlushes) {
+TEST(HandEvaluatorTest, MultipleFlushes)
+{
     HandEvaluator evaluator;
     cardVec communityCards = { Card('2', 'S'), Card('5', 'S'), Card('7', 'S'), Card('9', 'S'), Card('J', 'H') };
-    
+
     // Higher flush
     cardVec hand1 = { Card('A', 'S'), Card('K', 'D') };
-    
+
     // Lower flush
     cardVec hand2 = { Card('3', 'S'), Card('Q', 'D') };
-    
+
     auto result1 = evaluator.evaluateHand(hand1, communityCards);
     auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    
+    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
+    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
+
+
     EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FLUSH);
     EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FLUSH);
     EXPECT_GT(result1, result2);
+    EXPECT_LT(fastresult1, fastresult2);
 }
