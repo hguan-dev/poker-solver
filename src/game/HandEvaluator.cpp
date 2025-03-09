@@ -229,45 +229,48 @@ HandEvaluator::HandResult HandEvaluator::determineBestHand(const std::vector<Car
     return result;
 }
 
-int HandEvaluator::fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards)
-{
+int HandEvaluator::fastEvaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards) {
     // Merge the player's hand and community cards into a single vector of 7 cards.
     std::vector<Card> fullHand = mergeHand(hand, communityCards);
-
     int cards[7] = { 0 };
     int suit_hash = 0;
-
+    
     // Step 1: Encode cards and compute suit hash
     for (int i = 0; i < 7; i++) {
-        cards[i] = fullHand[i].getHash();// Get the compact integer representation of the card.
-
-        // Compute a bit-packed representation of suit distribution.
-        // `cards[i] % 4` extracts the suit (0-3), and `(1 << ((suit) * 3))` contributes to suit_hash.
-        suit_hash += (1 << ((cards[i] % 4) * 3));
+        int rankValue = fullHand[i].getValue() - 2; // Convert to 0-12 range
+        
+        // Convert suit character to numerical value (0-3)
+        int suitValue;
+        char suit = fullHand[i].getSuit();
+        switch(suit) {
+            case 'H': suitValue = 0; break;
+            case 'D': suitValue = 1; break;
+            case 'S': suitValue = 2; break;
+            case 'C': suitValue = 3; break;
+            default: suitValue = 0;
+        }
+        
+        cards[i] = (rankValue * 4) + suitValue;
+        
+        // Compute suit hash
+        suit_hash += (1 << (suitValue * 3));
     }
-
-    // Step 2: Check if there is a flush possibility using a precomputed lookup table
+    
     if (SUITS_TABLE[suit_hash]) {
-        int suit_binary[4] = { 0 };// Array representing cards of each suit.
-
-        // Map each card's rank into its respective suit.
-        for (int i = 0; i < 7; i++) { suit_binary[cards[i] & 0x3] |= (1 << (cards[i] / 4)); }
-
-        // Use precomputed table for flush evaluation based on the suit's binary pattern.
+        int suit_binary[4] = { 0 };
+        for (int i = 0; i < 7; i++) { 
+            suit_binary[cards[i] & 0x3] |= (1 << (cards[i] / 4)); 
+        }
         return FLUSH_TABLE[suit_binary[SUITS_TABLE[suit_hash] - 1]];
     }
-
-    // Step 3: If no flush, count the number of occurrences of each rank (quinary representation).
+    
     unsigned char quinary[13] = { 0 };
-
     for (int i = 0; i < 7; i++) {
-        quinary[cards[i] / 4]++;// Map rank to index and increment count.
+        quinary[cards[i] / 4]++;
     }
-
-    // Step 4: Compute the unique hand ranking using a precomputed lookup table.
+    
     const int hash = hashQuinaryResult(quinary);
-
-    return NOFLUSH_TABLE[hash];// Lookup the hand strength based on the hash.
+    return NOFLUSH_TABLE[hash];
 }
 
 

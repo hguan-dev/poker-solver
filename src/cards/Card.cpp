@@ -9,7 +9,7 @@ const char &Card::getRank() const
 }
 const char &Card::getSuit() const
 {
-    return suitStr;
+    return suit;
 }
 
 int Card::getValue() const

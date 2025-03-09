@@ -299,3 +299,103 @@ TEST(HandEvaluatorTest, FlushTiebreaker)
 
     EXPECT_LT(result1, result2);
 }
+
+TEST(HandEvaluatorTest, FiveCardStraightFlush) {
+    HandEvaluator evaluator;
+    cardVec hand = { Card('6', 'D'), Card('7', 'D') };
+    cardVec communityCards = { Card('8', 'D'), Card('9', 'D'), Card('T', 'D') };
+
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT_FLUSH);
+    EXPECT_EQ(result.identifier[0], 10);
+}
+
+TEST(HandEvaluatorTest, FourOfAKindVsFullHouse) {
+    HandEvaluator evaluator;
+    cardVec communityCards = { Card('A', 'H'), Card('A', 'D'), Card('A', 'C'), Card('K', 'D'), Card('K', 'H') };
+    
+    // Four Aces
+    cardVec hand1 = { Card('A', 'S'), Card('Q', 'C') };
+    
+    // Full House (Kings full of Aces)
+    cardVec hand2 = { Card('K', 'S'), Card('2', 'C') };
+    
+    auto result1 = evaluator.evaluateHand(hand1, communityCards);
+    auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    
+    EXPECT_GT(result1, result2);
+}
+
+TEST(HandEvaluatorTest, StraightVsFlush) {
+    HandEvaluator evaluator;
+    cardVec communityCards = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('T', 'D'), Card('J', 'S') };
+    
+    // Straight
+    cardVec hand1 = { Card('Q', 'D'), Card('K', 'C') };
+    
+    // Flush
+    cardVec hand2 = { Card('2', 'H'), Card('A', 'H') };
+    
+    auto result1 = evaluator.evaluateHand(hand1, communityCards);
+    auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    
+    EXPECT_LT(result1, result2);
+}
+
+TEST(HandEvaluatorTest, SameRankDifferentSuits) {
+    HandEvaluator evaluator;
+    // The suits shouldn't affect the ranking
+    cardVec hand1 = { Card('A', 'H'), Card('K', 'H') };
+    cardVec hand2 = { Card('A', 'S'), Card('K', 'S') };
+    cardVec communityCards = { Card('Q', 'D'), Card('J', 'C'), Card('T', 'H'), Card('9', 'S'), Card('8', 'D') };
+    
+    auto result1 = evaluator.evaluateHand(hand1, communityCards);
+    auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    
+    EXPECT_EQ(result1.rank, result2.rank);
+    EXPECT_EQ(result1, result2);
+}
+
+TEST(HandEvaluatorTest, TieFullHouse) {
+    HandEvaluator evaluator;
+    cardVec communityCards = { Card('Q', 'D'), Card('Q', 'S'), Card('Q', 'H'), Card('J', 'D'), Card('J', 'H') };
+    
+    cardVec hand1 = { Card('A', 'S'), Card('K', 'C') };
+    cardVec hand2 = { Card('A', 'H'), Card('K', 'D') };
+    
+    auto result1 = evaluator.evaluateHand(hand1, communityCards);
+    auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    
+    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
+    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
+    EXPECT_EQ(result1, result2);
+}
+
+TEST(HandEvaluatorTest, LowStraightWithHighCard) {
+    HandEvaluator evaluator;
+    cardVec hand = { Card('A', 'H'), Card('2', 'D') };
+    cardVec communityCards = { Card('3', 'S'), Card('4', 'C'), Card('5', 'H'), Card('K', 'D'), Card('Q', 'S') };
+    
+    auto result = evaluator.evaluateHand(hand, communityCards);
+    
+    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT);
+    EXPECT_EQ(result.identifier[0], 5); // Highest card in the straight is 5
+}
+
+TEST(HandEvaluatorTest, MultipleFlushes) {
+    HandEvaluator evaluator;
+    cardVec communityCards = { Card('2', 'S'), Card('5', 'S'), Card('7', 'S'), Card('9', 'S'), Card('J', 'H') };
+    
+    // Higher flush
+    cardVec hand1 = { Card('A', 'S'), Card('K', 'D') };
+    
+    // Lower flush
+    cardVec hand2 = { Card('3', 'S'), Card('Q', 'D') };
+    
+    auto result1 = evaluator.evaluateHand(hand1, communityCards);
+    auto result2 = evaluator.evaluateHand(hand2, communityCards);
+    
+    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FLUSH);
+    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FLUSH);
+    EXPECT_GT(result1, result2);
+}
