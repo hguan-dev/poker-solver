@@ -4,7 +4,6 @@
 #include "Deck.hpp"
 #include "Player.hpp"
 #include <memory>
-#include <string>
 #include <vector>
 
 class PokerGame
@@ -35,7 +34,7 @@ class PokerGame
     void shiftDealerButton();
     void dealHoleCards();
     void dealCommunityCards(int numCards);
-    void handlePhase(const std::string &phaseName, int numCommunityCards = 0);
+    void handlePhase(int numCommunityCards = 0);
     void preflop();
     void flop();
     void turn();

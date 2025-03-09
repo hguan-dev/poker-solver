@@ -20,14 +20,7 @@ void PokerGame::playGame()
         std::string play_again;
         std::cin >> play_again;
 
-        if (play_again == "n" || play_again == "no" || play_again == "exit" || play_again == "q") {
-            double pnl = player->getChips() - 100.0;
-            if (pnl < 0) {
-            } else if (pnl == 0) {
-            } else {
-            }
-            return;
-        }
+        if (play_again == "n") { return; }
 
         collectBlinds();
         dealHoleCards();
@@ -44,15 +37,10 @@ void PokerGame::playGame()
         } else if (!bot->isActive()) {
             player->addChips(pot);
         } else {
-            throw std::runtime_error("Invalid folding logic. Time to debug.");
+            throw std::runtime_error("Invalid folding logic.");
         }
 
-        if (player->getChips() == 0 || bot->getChips() == 0) {
-            if (bot->getChips() > 0)
-                continue;
-            else
-                break;
-        }
+        if (player->getChips() == 0 || bot->getChips() == 0) { break; }
 
         shiftDealerButton();
     }
@@ -97,14 +85,15 @@ void PokerGame::shiftDealerButton()
 
 void PokerGame::dealHoleCards()
 {
-    player->setHand(std::move(std::vector<Card>{ deck->popTop(), deck->popTop() }));
-    bot->setHand(std::move(std::vector<Card>{ deck->popTop(), deck->popTop() }));
+    player->setHand({ deck->popTop(), deck->popTop() });
+    bot->setHand({ deck->popTop(), deck->popTop() });
 }
 
 void PokerGame::dealCommunityCards(int numCards)
 {
-    for (int i = 0; i < numCards; ++i) { communityCards.push_back(std::move(deck->popTop())); }
+    std::generate_n(std::back_inserter(communityCards), numCards, [this]() { return deck->popTop(); });
 }
+
 
 double PokerGame::getCurrentBet()
 {
@@ -126,7 +115,7 @@ void PokerGame::addToPot(double value)
     pot += value;
 }
 
-void PokerGame::handlePhase(const std::string &phaseName, int numCommunityCards)
+void PokerGame::handlePhase(int numCommunityCards)
 {
     if (numCommunityCards > 0) dealCommunityCards(numCommunityCards);
     executeBettingRound(*this);
@@ -134,22 +123,22 @@ void PokerGame::handlePhase(const std::string &phaseName, int numCommunityCards)
 
 void PokerGame::preflop()
 {
-    handlePhase("Preflop", 0);
+    handlePhase(0);
 }
 
 void PokerGame::flop()
 {
-    handlePhase("Flop", 3);
+    handlePhase(3);
 }
 
 void PokerGame::turn()
 {
-    handlePhase("Turn", 1);
+    handlePhase(1);
 }
 
 void PokerGame::river()
 {
-    handlePhase("River", 1);
+    handlePhase(1);
 }
 
 void PokerGame::payout()
