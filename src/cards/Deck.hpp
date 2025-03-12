@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Card.hpp"
+#include <array>
 #include <random>
-#include <vector>
 
 class Deck
 {
   private:
-    std::vector<Card> cards;
+    std::array<Card, 52> cards;
     size_t activeSize;
     std::mt19937 g;
 

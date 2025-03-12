@@ -1,28 +1,25 @@
 #include "Deck.hpp"
-#include <algorithm>
-#include <stdexcept>
 
-Deck::Deck() : g(std::random_device{}())
+Deck::Deck() : cards{}, g(std::random_device{}()), activeSize(52)
 {
     const char suits[4] = { 'H', 'D', 'C', 'S' };
     const char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
 
-    for (const char &suit : suits) {
-        for (const char &rank : ranks) { cards.emplace_back(rank, suit); }
+    size_t index = 0;
+    for (char suit : suits) {
+        for (char rank : ranks) { cards[index++] = Card(rank, suit); }
     }
-    activeSize = cards.size();
 }
 
 Card Deck::popTop()
 {
     if (isEmpty()) { throw std::out_of_range("No cards left in deck"); }
-    return std::move(cards[--activeSize]);
+    return cards[--activeSize];
 }
 
 void Deck::shuffle()
 {
-    std::shuffle(cards.begin(), cards.end(), g);
-    activeSize = cards.size();
+    std::shuffle(cards.begin(), cards.begin() + activeSize, g);
 }
 
 bool Deck::isEmpty() const

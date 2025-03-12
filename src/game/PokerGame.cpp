@@ -8,8 +8,8 @@
 PokerGame::PokerGame() : pot(0), currentBet(0), playerIsDealer(true)
 {
     deck = std::make_unique<Deck>();
-    player = std::make_unique<Player>("Hero", 100.0);
-    bot = std::make_unique<Bot>("Villain", 100.0);
+    player = std::make_unique<Player>(100.0);
+    bot = std::make_unique<Bot>(100.0);
 }
 
 void PokerGame::playGame()
@@ -50,7 +50,7 @@ void PokerGame::resetGameState()
 {
     pot = 0;
     currentBet = 0;
-    communityCards.clear();
+    communityCards.fill(Card());
     deck->shuffle();
     player->reset();
     bot->reset();
@@ -91,7 +91,7 @@ void PokerGame::dealHoleCards()
 
 void PokerGame::dealCommunityCards(int numCards)
 {
-    std::generate_n(std::back_inserter(communityCards), numCards, [this]() { return deck->popTop(); });
+    for (int i = 0; i < numCards; ++i) { communityCards[i] = deck->popTop(); }
 }
 
 
@@ -145,8 +145,8 @@ void PokerGame::payout()
 {
     HandEvaluator evaluator;
 
-    auto heroResult = evaluator.fastEvaluateHand(player->getHand(), communityCards);
-    auto villainResult = evaluator.fastEvaluateHand(bot->getHand(), communityCards);
+    auto heroResult = evaluator.evaluateHand(player->getHand(), communityCards);
+    auto villainResult = evaluator.evaluateHand(bot->getHand(), communityCards);
 
     if (heroResult == villainResult) {
         player->addChips(pot / 2);

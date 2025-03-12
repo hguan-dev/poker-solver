@@ -2,6 +2,7 @@
 #include <fmt/core.h>
 
 Card::Card(const char &rank, const char &suit) : rank(rank), suit(suit) {}
+Card::Card() : rank('X'), suit('X') {}
 
 const char &Card::getRank() const
 {

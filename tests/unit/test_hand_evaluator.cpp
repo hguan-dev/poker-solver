@@ -2,431 +2,455 @@
 #include "HandEvaluator.hpp"
 #include <gtest/gtest.h>
 
-using cardVec = std::vector<Card>;
+using cardArr2 = std::array<Card, 2>;
+using cardArr5 = std::array<Card, 5>;
 
-//
-// Basic Tests
-//
-TEST(HandEvaluatorTest, RoyalFlush)
+
+#include "Card.hpp"
+#include "HandEvaluator.hpp"
+#include <gtest/gtest.h>
+
+using cardArr2 = std::array<Card, 2>;
+using cardArr5 = std::array<Card, 5>;
+
+// -----------------------------------------------------------------
+// Adjacent ranking comparisons (10 tests)
+// 1. Royal Flush beats Straight Flush
+TEST(HandEvaluatorComparison, RoyalFlushBeatsStraightFlush)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('T', 'H'), Card('J', 'H') };
-    cardVec communityCards = { Card('Q', 'H'), Card('K', 'H'), Card('A', 'H'), Card('4', 'S'), Card('9', 'H') };
+    // Board provides 4 hearts needed for a royal flush but not enough to form a straight flush on its own.
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    // Hole cards complete the royal flush.
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    // Opponent’s hole cards complete a lower straight flush (9♥ + board T,J,Q,K).
+    cardArr2 straightFlush = { Card('9', 'H'), Card('4', 'C') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Royal Flush";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::ROYAL_FLUSH);
-    EXPECT_EQ(result.identifier[0], 14);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    EXPECT_LT(royalFlushVal, straightFlushVal);
 }
 
-TEST(HandEvaluatorTest, StraightFlush)
+// 2. Straight Flush beats Four‐of‐a‐Kind (Quads)
+TEST(HandEvaluatorComparison, StraightFlushBeatsQuads)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('9', 'C'), Card('T', 'C') };
-    cardVec communityCards = { Card('J', 'C'), Card('Q', 'C'), Card('K', 'C'), Card('2', 'H'), Card('3', 'H') };
+    // Board has a pair plus three suited cards in sequence.
+    cardArr5 community = { Card('Q', 'H'), Card('Q', 'C'), Card('7', 'H'), Card('8', 'H'), Card('9', 'H') };
+    // Hole cards form a straight flush: 6♥ and T♥ complete 6-7-8-9-T of hearts.
+    cardArr2 straightFlush = { Card('6', 'H'), Card('T', 'H') };
+    // Opponent’s hole cards form quads: with two Q’s in hand joining the pair on board.
+    cardArr2 quads = { Card('Q', 'D'), Card('Q', 'S') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Straight Flush";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT_FLUSH);
-    EXPECT_EQ(result.identifier[0], 13);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    EXPECT_LT(straightFlushVal, quadsVal);
 }
 
-TEST(HandEvaluatorTest, QuadsOverQuads)
+// 3. Four‐of‐a‐Kind beats Full House
+TEST(HandEvaluatorComparison, QuadsBeatsFullHouse)
 {
     HandEvaluator evaluator;
-    // Hand 1 is Quad 9's
-    cardVec hand1 = { Card('9', 'C'), Card('9', 'D') };
-    // Hand 2 is Quad 10's
-    cardVec hand2 = { Card('T', 'C'), Card('T', 'D') };
-    cardVec communityCards = { Card('9', 'H'), Card('9', 'S'), Card('T', 'H'), Card('T', 'S'), Card('2', 'H') };
+    // Board with three 9’s and two kickers.
+    cardArr5 community = { Card('9', 'S'), Card('9', 'H'), Card('9', 'D'), Card('K', 'C'), Card('Q', 'C') };
+    // With hole cards, one hand makes quads (four 9’s).
+    cardArr2 quads = { Card('9', 'C'), Card('2', 'S') };
+    // Other hand uses hole cards to form a full house (jacks full of 9’s).
+    cardArr2 fullHouse = { Card('K', 'D'), Card('K', 'H') };
 
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-
-    EXPECT_EQ(result1.highCards[0], 10);
-    EXPECT_EQ(result2.highCards[0], 9);
-
-    ASSERT_FALSE(result1.identifier.empty()) << "Identifier for result1 should not be empty";
-    ASSERT_FALSE(result2.identifier.empty()) << "Identifier for result2 should not be empty";
-
-    EXPECT_LT(result1, result2);
-    EXPECT_GT(fastresult1, fastresult2);
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
+    EXPECT_LT(quadsVal, fullHouseVal);
 }
 
-TEST(HandEvaluatorTest, Quads)
+// 4. Full House beats Flush
+TEST(HandEvaluatorComparison, FullHouseBeatsFlush)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('9', 'C'), Card('9', 'D') };
-    cardVec communityCards = { Card('9', 'H'), Card('9', 'S'), Card('K', 'C'), Card('4', 'H'), Card('6', 'D') };
+    // Board has a pair (5’s) but not a flush on its own.
+    cardArr5 community = { Card('2', 'H'), Card('5', 'H'), Card('5', 'D'), Card('K', 'D'), Card('3', 'H') };
+    // Hole cards that combine with board to form a full house (kings full of 5’s).
+    cardArr2 fullHouse = { Card('K', 'H'), Card('K', 'C') };
+    // Opponent’s hole cards yield a flush in hearts.
+    cardArr2 flush = { Card('9', 'H'), Card('J', 'H') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Quads";
-    ASSERT_FALSE(result.highCards.empty()) << "HighCards should not be empty for Quads";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::FOUR_OF_A_KIND);
-    EXPECT_EQ(result.identifier[0], 9);
-    EXPECT_EQ(result.highCards[0], 13);
+    int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
+    int flushVal = evaluator.evaluateHand(flush, community);
+    EXPECT_LT(fullHouseVal, flushVal);
 }
 
-TEST(HandEvaluatorTest, FullHouse)
+// 5. Flush beats Straight
+TEST(HandEvaluatorComparison, FlushBeatsStraight)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('T', 'C'), Card('T', 'D') };
-    cardVec communityCards = { Card('T', 'H'), Card('J', 'S'), Card('J', 'C'), Card('4', 'H'), Card('9', 'D') };
+    // Board with three hearts (and two offsuit) so that flush and straight are possible.
+    cardArr5 community = { Card('4', 'H'), Card('5', 'H'), Card('9', 'H'), Card('T', 'C'), Card('J', 'D') };
+    // One hand gets a flush by adding two hearts.
+    cardArr2 flushHand = { Card('2', 'H'), Card('8', 'H') };
+    // Other hand makes a straight (using 7 and 8 off-suit with board T,J, plus 9).
+    cardArr2 straightHand = { Card('7', 'C'), Card('8', 'C') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Full House";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::FULL_HOUSE);
-    EXPECT_EQ(result.identifier[0], 10);
-    EXPECT_EQ(result.identifier[1], 11);
-    EXPECT_EQ(result.highCards.size(), 0);
+    int flushVal = evaluator.evaluateHand(flushHand, community);
+    int straightVal = evaluator.evaluateHand(straightHand, community);
+    EXPECT_LT(flushVal, straightVal);
 }
 
-TEST(HandEvaluatorTest, Flush)
+// 6. Straight beats Three‐of‐a‐Kind
+TEST(HandEvaluatorComparison, StraightBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('2', 'H'), Card('5', 'H') };
-    cardVec communityCards = { Card('9', 'H'), Card('J', 'H'), Card('K', 'H'), Card('3', 'D'), Card('8', 'S') };
+    // A neutral board that doesn’t itself form a straight.
+    cardArr5 community = { Card('3', 'D'), Card('5', 'C'), Card('7', 'H'), Card('Q', 'S'), Card('K', 'D') };
+    // Hole cards that complete a straight: 4 and 6 make 3-4-5-6-7.
+    cardArr2 straightHand = { Card('4', 'H'), Card('6', 'H') };
+    // Other hand makes three-of-a-kind (using 7’s).
+    cardArr2 trips = { Card('7', 'C'), Card('7', 'D') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.highCards.empty()) << "HighCards should not be empty for Flush";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::FLUSH);
-    EXPECT_EQ(result.identifier[0], 13);
-    EXPECT_EQ(result.highCards.size(), 5);
-    EXPECT_EQ(result.highCards[0], 13);
-    EXPECT_EQ(result.highCards[1], 11);
-    EXPECT_EQ(result.highCards[2], 9);
-    EXPECT_EQ(result.highCards[3], 5);
-    EXPECT_EQ(result.highCards[4], 2);
+    int straightVal = evaluator.evaluateHand(straightHand, community);
+    int tripsVal = evaluator.evaluateHand(trips, community);
+    EXPECT_LT(straightVal, tripsVal);
 }
 
-TEST(HandEvaluatorTest, Straight)
+// 7. Three‐of‐a‐Kind beats Two Pair
+TEST(HandEvaluatorComparison, ThreeOfAKindBeatsTwoPair)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('2', 'D'), Card('3', 'C') };
-    cardVec communityCards = { Card('4', 'H'), Card('5', 'S'), Card('6', 'C'), Card('K', 'H'), Card('7', 'D') };
+    // Neutral board with no inherent pair.
+    cardArr5 community = { Card('2', 'C'), Card('5', 'D'), Card('9', 'H'), Card('K', 'S'), Card('3', 'D') };
+    // Hand that makes three-of-a-kind (with 9’s).
+    cardArr2 trips = { Card('9', 'C'), Card('9', 'D') };
+    // Hand that makes two pair (using K and 5 from hole cards).
+    cardArr2 twoPair = { Card('K', 'D'), Card('5', 'C') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Straight";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT);
-    EXPECT_EQ(result.identifier[0], 7);
+    int tripsVal = evaluator.evaluateHand(trips, community);
+    int twoPairVal = evaluator.evaluateHand(twoPair, community);
+    EXPECT_LT(tripsVal, twoPairVal);
 }
 
-TEST(HandEvaluatorTest, AceHighStraight)
+// 8. Two Pair beats One Pair
+TEST(HandEvaluatorComparison, TwoPairBeatsOnePair)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('A', 'D'), Card('2', 'C') };
-    cardVec communityCards = { Card('K', 'H'), Card('Q', 'S'), Card('T', 'C'), Card('3', 'H'), Card('J', 'D') };
+    cardArr5 community = { Card('4', 'C'), Card('7', 'D'), Card('9', 'H'), Card('J', 'S'), Card('3', 'D') };
+    // Hand with two pair (4’s and 7’s).
+    cardArr2 twoPair = { Card('4', 'H'), Card('7', 'C') };
+    // Hand with one pair (pair of 4’s).
+    cardArr2 onePair = { Card('4', 'D'), Card('2', 'C') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Straight";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT);
-    EXPECT_EQ(result.identifier[0], 14);
+    int twoPairVal = evaluator.evaluateHand(twoPair, community);
+    int onePairVal = evaluator.evaluateHand(onePair, community);
+    EXPECT_LT(twoPairVal, onePairVal);
 }
 
-TEST(HandEvaluatorTest, AceLowStraight)
+// 9. One Pair beats High Card
+TEST(HandEvaluatorComparison, OnePairBeatsHighCard)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('2', 'D'), Card('A', 'C') };
-    cardVec communityCards = { Card('4', 'H'), Card('5', 'S'), Card('3', 'C'), Card('K', 'H'), Card('7', 'D') };
+    cardArr5 community = { Card('4', 'C'), Card('7', 'D'), Card('9', 'H'), Card('J', 'S'), Card('3', 'D') };
+    // Hand that makes one pair (pair of J’s from hole card + board).
+    cardArr2 onePair = { Card('J', 'D'), Card('2', 'C') };
+    // Hand that is only high card.
+    cardArr2 highCard = { Card('A', 'C'), Card('8', 'S') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    ASSERT_FALSE(result.identifier.empty()) << "Identifier should not be empty for Straight";
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT);
-    EXPECT_EQ(result.identifier[0], 5);
+    int onePairVal = evaluator.evaluateHand(onePair, community);
+    int highCardVal = evaluator.evaluateHand(highCard, community);
+    EXPECT_LT(onePairVal, highCardVal);
 }
 
-TEST(HandEvaluatorTest, ThreeOfAKind)
+// 10. High Card Tie (both players’ best five cards come solely from the board)
+TEST(HandEvaluatorComparison, HighCardTie)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('T', 'C'), Card('T', 'D') };
-    cardVec communityCards = { Card('T', 'H'), Card('J', 'S'), Card('K', 'C') };
+    cardArr5 community = { Card('4', 'C'), Card('7', 'D'), Card('9', 'H'), Card('J', 'S'), Card('K', 'D') };
+    // Both players have hole cards that do not improve on the board.
+    cardArr2 highCard1 = { Card('2', 'C'), Card('3', 'D') };
+    cardArr2 highCard2 = { Card('3', 'C'), Card('2', 'D') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::THREE_OF_A_KIND);
-    EXPECT_EQ(result.identifier[0], 10);
-    EXPECT_EQ(result.highCards[0], 13);
-    EXPECT_EQ(result.highCards[1], 11);
+    int highCardVal1 = evaluator.evaluateHand(highCard1, community);
+    int highCardVal2 = evaluator.evaluateHand(highCard2, community);
+    EXPECT_EQ(highCardVal1, highCardVal2);
 }
 
-TEST(HandEvaluatorTest, TwoPair)
+// -----------------------------------------------------------------
+// Additional tests comparing non‐adjacent rankings
+
+// 11. Royal Flush beats Quads
+TEST(HandEvaluatorComparison, RoyalFlushBeatsQuads)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('T', 'C'), Card('T', 'D') };
-    cardVec communityCards = { Card('J', 'H'), Card('J', 'S'), Card('K', 'C') };
+    // Board provides four suited cards that serve double duty:
+    // It gives a royal flush for one hand and a pair for kings for the other.
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('K', 'D') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    // Opponent’s hole cards complete quads of kings.
+    cardArr2 quads = { Card('K', 'C'), Card('K', 'S') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::TWO_PAIR);
-    EXPECT_EQ(result.identifier[0], 11);
-    EXPECT_EQ(result.identifier[1], 10);
-    EXPECT_EQ(result.highCards[0], 13);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    EXPECT_LT(royalFlushVal, quadsVal);
 }
 
-TEST(HandEvaluatorTest, TwoPairCounterfeited)
+// 12. Royal Flush beats Full House
+TEST(HandEvaluatorComparison, RoyalFlushBeatsFullHouse)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('T', 'C'), Card('T', 'D') };
-    cardVec communityCards = { Card('J', 'H'), Card('J', 'S'), Card('K', 'C'), Card('K', 'H'), Card('8', 'C') };
+    // Board has four royal cards plus an extra that makes a pair.
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('T', 'D') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    // Opponent forms full house using two jacks.
+    cardArr2 fullHouse = { Card('J', 'C'), Card('J', 'D') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::TWO_PAIR);
-    EXPECT_EQ(result.identifier[0], 13);
-    EXPECT_EQ(result.identifier[1], 11);
-    EXPECT_EQ(result.highCards[0], 10);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
+    EXPECT_LT(royalFlushVal, fullHouseVal);
 }
 
-TEST(HandEvaluatorTest, OnePair)
+// 13. Royal Flush beats Flush
+TEST(HandEvaluatorComparison, RoyalFlushBeatsFlush)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('T', 'C'), Card('T', 'D') };
-    cardVec communityCards = { Card('J', 'H'), Card('Q', 'S'), Card('K', 'C') };
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    cardArr2 flush = { Card('9', 'H'), Card('4', 'H') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::ONE_PAIR);
-    EXPECT_EQ(result.identifier[0], 10);
-    EXPECT_EQ(result.highCards[0], 13);
-    EXPECT_EQ(result.highCards[1], 12);
-    EXPECT_EQ(result.highCards[2], 11);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int flushVal = evaluator.evaluateHand(flush, community);
+    EXPECT_LT(royalFlushVal, flushVal);
 }
 
-TEST(HandEvaluatorTest, HighCard)
+// 14. Royal Flush beats Straight
+TEST(HandEvaluatorComparison, RoyalFlushBeatsStraight)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('2', 'D'), Card('5', 'C') };
-    cardVec communityCards = { Card('7', 'H'), Card('9', 'S'), Card('J', 'C') };
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    // Opponent’s hole cards complete a straight (8 and 9, joining T,J,Q).
+    cardArr2 straight = { Card('9', 'C'), Card('8', 'D') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::HIGH_CARD);
-    EXPECT_EQ(result.identifier[0], 11);
-    EXPECT_EQ(result.highCards[0], 9);
-    EXPECT_EQ(result.highCards[1], 7);
-    EXPECT_EQ(result.highCards[2], 5);
-    EXPECT_EQ(result.highCards[3], 2);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int straightVal = evaluator.evaluateHand(straight, community);
+    EXPECT_LT(royalFlushVal, straightVal);
 }
 
-//
-// Different Kicker Tests
-//
-TEST(HandEvaluatorTest, TwoPairsWithDifferentKickers)
+// 15. Royal Flush beats Three‐of‐a‐Kind
+TEST(HandEvaluatorComparison, RoyalFlushBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    // Opponent’s hole cards make trips (using the board 2).
+    cardArr2 trips = { Card('2', 'D'), Card('2', 'S') };
 
-    cardVec communityCards = { Card('K', 'H'), Card('7', 'D'), Card('3', 'C'), Card('3', 'S'), Card('2', 'H') };
-
-    cardVec hand1 = { Card('K', 'D'), Card('A', 'C') };
-    cardVec hand2 = { Card('K', 'C'), Card('Q', 'S') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::TWO_PAIR);
-    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::TWO_PAIR);
-
-    EXPECT_GT(result1, result2);
-    EXPECT_LT(fastresult1, fastresult2);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int tripsVal = evaluator.evaluateHand(trips, community);
+    EXPECT_LT(royalFlushVal, tripsVal);
 }
 
-TEST(HandEvaluatorTest, FullHouseTripsTiebreaker)
+// 16. Royal Flush beats Two Pair
+TEST(HandEvaluatorComparison, RoyalFlushBeatsTwoPair)
 {
     HandEvaluator evaluator;
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
+    // Opponent’s hole cards form two pair.
+    cardArr2 twoPair = { Card('T', 'C'), Card('J', 'C') };
 
-    cardVec communityCards = { Card('Q', 'C'), Card('J', 'S'), Card('J', 'D'), Card('4', 'H'), Card('2', 'C') };
-
-    // Queens over Jacks
-    cardVec hand1 = { Card('Q', 'H'), Card('Q', 'D') };
-
-    // Jacks over Queens
-    cardVec hand2 = { Card('J', 'C'), Card('Q', 'D') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-
-    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
-    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
-
-    EXPECT_GT(result1, result2);
-    EXPECT_LT(fastresult1, fastresult2);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int twoPairVal = evaluator.evaluateHand(twoPair, community);
+    EXPECT_LT(royalFlushVal, twoPairVal);
 }
 
-TEST(HandEvaluatorTest, FullHousePairTiebreaker)
+// 17. Royal Flush beats One Pair
+TEST(HandEvaluatorComparison, RoyalFlushBeatsOnePair)
 {
     HandEvaluator evaluator;
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('4', 'C') };
+    // Opponent’s hole cards form one pair (pair of 3’s).
+    cardArr2 onePair = { Card('3', 'D'), Card('3', 'S') };
 
-    cardVec communityCards = { Card('Q', 'C'), Card('Q', 'S'), Card('9', 'D'), Card('7', 'H'), Card('2', 'C') };
-
-    // Queens over Nines
-    cardVec hand1 = { Card('9', 'H'), Card('Q', 'D') };
-
-    // Queens over Sevens
-    cardVec hand2 = { Card('Q', 'H'), Card('7', 'S') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
-    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
-
-    EXPECT_GT(result1, result2);
-    EXPECT_LT(fastresult1, fastresult2);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int onePairVal = evaluator.evaluateHand(onePair, community);
+    EXPECT_LT(royalFlushVal, onePairVal);
 }
 
-TEST(HandEvaluatorTest, FlushTiebreaker)
+// 18. Royal Flush beats High Card
+TEST(HandEvaluatorComparison, RoyalFlushBeatsHighCard)
 {
     HandEvaluator evaluator;
+    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
+    cardArr2 royalFlush = { Card('A', 'H'), Card('4', 'C') };
+    // Opponent’s hole cards do not improve on the board.
+    cardArr2 highCard = { Card('8', 'D'), Card('7', 'S') };
 
-    cardVec communityCards = { Card('A', 'H'), Card('K', 'H'), Card('7', 'H'), Card('6', 'D'), Card('2', 'S') };
-
-    // Tiebreaker card is 4
-    cardVec hand1 = { Card('3', 'H'), Card('4', 'H') };
-
-    // Tiebreaker card is 5
-    cardVec hand2 = { Card('2', 'H'), Card('5', 'H') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-
-    ASSERT_FALSE(result1.identifier.empty());
-    ASSERT_FALSE(result2.identifier.empty());
-
-    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FLUSH);
-    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FLUSH);
-
-    EXPECT_LT(result1, result2);
-    EXPECT_GT(fastresult1, fastresult2);
+    int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
+    int highCardVal = evaluator.evaluateHand(highCard, community);
+    EXPECT_LT(royalFlushVal, highCardVal);
 }
 
-TEST(HandEvaluatorTest, FiveCardStraightFlush)
+// 19. Straight Flush beats Full House
+TEST(HandEvaluatorComparison, StraightFlushBeatsFullHouse)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('6', 'D'), Card('7', 'D') };
-    cardVec communityCards = { Card('8', 'D'), Card('9', 'D'), Card('T', 'D') };
+    // Board with three hearts in sequence and a pair of kings.
+    cardArr5 community = { Card('6', 'H'), Card('7', 'H'), Card('8', 'H'), Card('K', 'S'), Card('K', 'D') };
+    // Opponent’s hole cards form a straight flush.
+    cardArr2 straightFlush = { Card('4', 'H'), Card('5', 'H') };
+    // Other hand makes a full house (using a king and an 8).
+    cardArr2 fullHouse = { Card('K', 'H'), Card('8', 'S') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT_FLUSH);
-    EXPECT_EQ(result.identifier[0], 10);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
+    EXPECT_LT(straightFlushVal, fullHouseVal);
 }
 
-TEST(HandEvaluatorTest, FourOfAKindVsFullHouse)
+// 20. Straight Flush beats Flush
+TEST(HandEvaluatorComparison, StraightFlushBeatsFlush)
 {
     HandEvaluator evaluator;
-    cardVec communityCards = { Card('A', 'H'), Card('A', 'D'), Card('A', 'C'), Card('K', 'D'), Card('K', 'H') };
+    // Board with three hearts (but not in sequence) plus two neutral cards.
+    cardArr5 community = { Card('6', 'H'), Card('7', 'H'), Card('8', 'H'), Card('2', 'C'), Card('3', 'D') };
+    cardArr2 straightFlush = { Card('4', 'H'), Card('5', 'H') };
+    cardArr2 flush = { Card('9', 'H'), Card('Q', 'H') };
 
-    // Four Aces
-    cardVec hand1 = { Card('A', 'S'), Card('Q', 'C') };
-
-    // Full House (Kings full of Aces)
-    cardVec hand2 = { Card('K', 'S'), Card('2', 'C') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-
-
-    EXPECT_GT(result1, result2);
-    EXPECT_LT(fastresult1, fastresult2);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int flushVal = evaluator.evaluateHand(flush, community);
+    EXPECT_LT(straightFlushVal, flushVal);
 }
 
-TEST(HandEvaluatorTest, StraightVsFlush)
+// 21. Straight Flush beats Straight
+TEST(HandEvaluatorComparison, StraightFlushBeatsStraight)
 {
     HandEvaluator evaluator;
-    cardVec communityCards = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('T', 'D'), Card('J', 'S') };
+    // Board that does not itself form a straight.
+    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
+    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
+    // Opponent’s hole cards make a straight.
+    cardArr2 straight = { Card('T', 'C'), Card('J', 'C') };
 
-    // Straight
-    cardVec hand1 = { Card('Q', 'D'), Card('K', 'C') };
-
-    // Flush
-    cardVec hand2 = { Card('2', 'H'), Card('A', 'H') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
-
-    EXPECT_LT(result1, result2);
-    EXPECT_GT(fastresult1, fastresult2);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int straightVal = evaluator.evaluateHand(straight, community);
+    EXPECT_LT(straightFlushVal, straightVal);
 }
 
-TEST(HandEvaluatorTest, SameRankDifferentSuits)
+// 22. Straight Flush beats Three‐of‐a‐Kind
+TEST(HandEvaluatorComparison, StraightFlushBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
-    // The suits shouldn't affect the ranking
-    cardVec hand1 = { Card('A', 'H'), Card('K', 'H') };
-    cardVec hand2 = { Card('A', 'S'), Card('K', 'S') };
-    cardVec communityCards = { Card('Q', 'D'), Card('J', 'C'), Card('T', 'H'), Card('9', 'S'), Card('8', 'D') };
+    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
+    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
+    cardArr2 trips = { Card('7', 'C'), Card('7', 'D') };
 
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
-    EXPECT_EQ(result1.rank, result2.rank);
-    EXPECT_EQ(result1, result2);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int tripsVal = evaluator.evaluateHand(trips, community);
+    EXPECT_LT(straightFlushVal, tripsVal);
 }
 
-TEST(HandEvaluatorTest, TieFullHouse)
+// 23. Straight Flush beats Two Pair
+TEST(HandEvaluatorComparison, StraightFlushBeatsTwoPair)
 {
     HandEvaluator evaluator;
-    cardVec communityCards = { Card('Q', 'D'), Card('Q', 'S'), Card('Q', 'H'), Card('J', 'D'), Card('J', 'H') };
+    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
+    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
+    cardArr2 twoPair = { Card('7', 'C'), Card('8', 'C') };
 
-    cardVec hand1 = { Card('A', 'S'), Card('K', 'C') };
-    cardVec hand2 = { Card('A', 'H'), Card('K', 'D') };
-
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-
-    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FULL_HOUSE);
-    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FULL_HOUSE);
-    EXPECT_EQ(result1, result2);
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int twoPairVal = evaluator.evaluateHand(twoPair, community);
+    EXPECT_LT(straightFlushVal, twoPairVal);
 }
 
-TEST(HandEvaluatorTest, LowStraightWithHighCard)
+// 24. Straight Flush beats One Pair
+TEST(HandEvaluatorComparison, StraightFlushBeatsOnePair)
 {
     HandEvaluator evaluator;
-    cardVec hand = { Card('A', 'H'), Card('2', 'D') };
-    cardVec communityCards = { Card('3', 'S'), Card('4', 'C'), Card('5', 'H'), Card('K', 'D'), Card('Q', 'S') };
+    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
+    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
+    cardArr2 onePair = { Card('7', 'C'), Card('3', 'D') };
 
-    auto result = evaluator.evaluateHand(hand, communityCards);
-
-    EXPECT_EQ(result.rank, HandEvaluator::HandRank::STRAIGHT);
-    EXPECT_EQ(result.identifier[0], 5);// Highest card in the straight is 5
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int onePairVal = evaluator.evaluateHand(onePair, community);
+    EXPECT_LT(straightFlushVal, onePairVal);
 }
 
-TEST(HandEvaluatorTest, MultipleFlushes)
+// 25. Straight Flush beats High Card
+TEST(HandEvaluatorComparison, StraightFlushBeatsHighCard)
 {
     HandEvaluator evaluator;
-    cardVec communityCards = { Card('2', 'S'), Card('5', 'S'), Card('7', 'S'), Card('9', 'S'), Card('J', 'H') };
+    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
+    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
+    cardArr2 highCard = { Card('A', 'C'), Card('3', 'C') };
 
-    // Higher flush
-    cardVec hand1 = { Card('A', 'S'), Card('K', 'D') };
+    int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
+    int highCardVal = evaluator.evaluateHand(highCard, community);
+    EXPECT_LT(straightFlushVal, highCardVal);
+}
 
-    // Lower flush
-    cardVec hand2 = { Card('3', 'S'), Card('Q', 'D') };
+// 26. Four‐of‐a‐Kind beats Flush
+TEST(HandEvaluatorComparison, QuadsBeatsFlush)
+{
+    HandEvaluator evaluator;
+    // Board with a pair of hearts (and one heart among the quads rank).
+    cardArr5 community = { Card('9', 'S'), Card('9', 'H'), Card('9', 'D'), Card('4', 'H'), Card('7', 'H') };
+    cardArr2 quads = { Card('9', 'C'), Card('2', 'S') };
+    cardArr2 flush = { Card('A', 'H'), Card('K', 'H') };
 
-    auto result1 = evaluator.evaluateHand(hand1, communityCards);
-    auto result2 = evaluator.evaluateHand(hand2, communityCards);
-    auto fastresult1 = evaluator.fastEvaluateHand(hand1, communityCards);
-    auto fastresult2 = evaluator.fastEvaluateHand(hand2, communityCards);
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    int flushVal = evaluator.evaluateHand(flush, community);
+    EXPECT_LT(quadsVal, flushVal);
+}
 
+// 27. Four‐of‐a‐Kind beats Straight
+TEST(HandEvaluatorComparison, QuadsBeatsStraight)
+{
+    HandEvaluator evaluator;
+    // Board that gives a pair plus extra cards.
+    cardArr5 community = { Card('9', 'S'), Card('9', 'H'), Card('9', 'D'), Card('8', 'S'), Card('7', 'D') };
+    cardArr2 quads = { Card('9', 'C'), Card('2', 'C') };
+    cardArr2 straight = { Card('T', 'C'), Card('J', 'C') };
 
-    EXPECT_EQ(result1.rank, HandEvaluator::HandRank::FLUSH);
-    EXPECT_EQ(result2.rank, HandEvaluator::HandRank::FLUSH);
-    EXPECT_GT(result1, result2);
-    EXPECT_LT(fastresult1, fastresult2);
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    int straightVal = evaluator.evaluateHand(straight, community);
+    EXPECT_LT(quadsVal, straightVal);
+}
+
+// 28. Four‐of‐a‐Kind beats Three‐of‐a‐Kind
+TEST(HandEvaluatorComparison, QuadsBeatsThreeOfAKind)
+{
+    HandEvaluator evaluator;
+    // Board with three 5’s.
+    cardArr5 community = { Card('5', 'C'), Card('5', 'D'), Card('5', 'H'), Card('8', 'S'), Card('7', 'D') };
+    cardArr2 quads = { Card('5', 'S'), Card('2', 'C') };
+    cardArr2 trips = { Card('8', 'C'), Card('8', 'D') };
+
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    int tripsVal = evaluator.evaluateHand(trips, community);
+    EXPECT_LT(quadsVal, tripsVal);
+}
+
+// 29. Four‐of‐a‐Kind beats Two Pair
+TEST(HandEvaluatorComparison, QuadsBeatsTwoPair)
+{
+    HandEvaluator evaluator;
+    // Board with three 4’s.
+    cardArr5 community = { Card('4', 'C'), Card('4', 'D'), Card('4', 'H'), Card('9', 'S'), Card('7', 'D') };
+    cardArr2 quads = { Card('4', 'S'), Card('2', 'C') };
+    cardArr2 twoPair = { Card('9', 'C'), Card('7', 'C') };
+
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    int twoPairVal = evaluator.evaluateHand(twoPair, community);
+    EXPECT_LT(quadsVal, twoPairVal);
+}
+
+// 30. Four‐of‐a‐Kind beats One Pair
+TEST(HandEvaluatorComparison, QuadsBeatsOnePair)
+{
+    HandEvaluator evaluator;
+    // Use a board that provides a pair (but not a set) so that a pair in the hand remains just one pair.
+    cardArr5 community = { Card('3', 'C'), Card('3', 'D'), Card('8', 'H'), Card('T', 'S'), Card('Q', 'D') };
+    cardArr2 quads = { Card('3', 'H'), Card('3', 'S') };
+    cardArr2 onePair = { Card('4', 'H'), Card('6', 'H') };
+
+    int quadsVal = evaluator.evaluateHand(quads, community);
+    int onePairVal = evaluator.evaluateHand(onePair, community);
+    EXPECT_LT(quadsVal, onePairVal);
 }

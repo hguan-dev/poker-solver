@@ -5,7 +5,7 @@
 class Bot : public Agent
 {
   public:
-    Bot(const std::string &name, double initialChips);
+    Bot(double initialChips);
 
     void makeMove(double &pot, double highestBet);
 };

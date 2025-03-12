@@ -34,8 +34,8 @@ cpptest: build
 lint: cpplint
 
 cpplint: build
-	run-clang-tidy -p build
-	find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) | xargs run-clang-tidy -p build --
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) | xargs clang-format --dry-run --Werror
 
 format: cppformat
 
