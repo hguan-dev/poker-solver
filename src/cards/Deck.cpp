@@ -1,4 +1,6 @@
 #include "Deck.hpp"
+#include <algorithm>
+#include <stdexcept>
 
 Deck::Deck() : cards{}, g(std::random_device{}()), activeSize(52)
 {
