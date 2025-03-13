@@ -1,7 +1,6 @@
 #include "Bot.hpp"
-#include <iostream>
 
-Bot::Bot(const std::string &name, double initialChips) : Agent(name, initialChips) {}
+Bot::Bot(double initialChips) : Agent(initialChips) {}
 
 void Bot::makeMove(double &pot, double highestBet)
 {

@@ -3,15 +3,14 @@
 
 TEST(PlayerTest, PlayerInitiation)
 {
-    Player player("Harry", 100);
+    Player player(100);
     EXPECT_EQ(player.getChips(), 100);
-    EXPECT_EQ(player.getName(), "Harry");
     EXPECT_EQ(player.isActive(), true);
 }
 
 TEST(PlayerTest, PlayerModifiers)
 {
-    Player player("Harry", 100);
+    Player player(100);
     player.addChips(10);
     EXPECT_EQ(player.getChips(), 110);
     player.deductChips(100);
@@ -22,9 +21,9 @@ TEST(PlayerTest, PlayerModifiers)
 
 TEST(PlayerTest, PlayerHand)
 {
-    Player player("Harry", 100);
+    Player player(100);
 
-    std::vector<Card> hand = { Card('J', 'S'), Card('K', 'H') };
+    std::array<Card, 2> hand = { Card('J', 'S'), Card('K', 'H') };
 
     player.setHand(hand);
 

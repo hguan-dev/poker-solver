@@ -6,6 +6,7 @@ class Card
 {
   public:
     Card(const char &rank, const char &suit);
+    Card();
     const char &getRank() const;
     const char &getSuit() const;
     int getValue() const;
