@@ -6,72 +6,74 @@ std::array<Card, 7> HandEvaluator::mergeHand(const std::array<Card, 2> &hand, co
     std::array<Card, 7> fullHand;
     std::copy(hand.begin(), hand.end(), fullHand.begin());
     std::copy(communityCards.begin(), communityCards.end(), fullHand.begin() + 2);
-
     return fullHand;
 }
 
+int getSuitValue(char suit)
+{
+    switch (suit) {
+    case 'H':
+        return 0;
+    case 'D':
+        return 1;
+    case 'S':
+        return 2;
+    case 'C':
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+// Evaluates the best possible hand rank given a player's hole cards and community cards
 int HandEvaluator::evaluateHand(const std::array<Card, 2> &hand, const std::array<Card, 5> &communityCards)
 {
     std::array<Card, 7> fullHand = mergeHand(hand, communityCards);
-    int cards[7] = { 0 };
-    int suit_hash = 0;
 
+    int cardIndices[7] = { 0 };// Encodes rank & suit for hashing
+    int suitHash = 0;
+
+    // Convert cards to numerical representation
     for (int i = 0; i < 7; i++) {
         int rankValue = fullHand[i].getValue() - 2;
+        int suitValue = getSuitValue(fullHand[i].getSuit());
 
-        int suitValue;
-        char suit = fullHand[i].getSuit();
-        switch (suit) {
-        case 'H':
-            suitValue = 0;
-            break;
-        case 'D':
-            suitValue = 1;
-            break;
-        case 'S':
-            suitValue = 2;
-            break;
-        case 'C':
-            suitValue = 3;
-            break;
-        default:
-            suitValue = 0;
+        cardIndices[i] = (rankValue * 4) + suitValue;
+        suitHash += (1 << (suitValue * 3));
+    }
+
+    // Check if the hand is a flush
+    if (SUITS_TABLE[suitHash]) {
+        int suitBinary[4] = { 0 };
+
+        for (int i = 0; i < 7; i++) {
+            int suit = cardIndices[i] & 0x3;
+            int rank = cardIndices[i] / 4;
+            suitBinary[suit] |= (1 << rank);
         }
 
-        cards[i] = (rankValue * 4) + suitValue;
-
-        suit_hash += (1 << (suitValue * 3));
+        return FLUSH_TABLE[suitBinary[SUITS_TABLE[suitHash] - 1]];
     }
 
-    if (SUITS_TABLE[suit_hash]) {
-        int suit_binary[4] = { 0 };
-        for (int i = 0; i < 7; i++) { suit_binary[cards[i] & 0x3] |= (1 << (cards[i] / 4)); }
+    // Convert to quinary representation (number of each rank present)
+    unsigned char rankQuinary[13] = { 0 };
+    for (int i = 0; i < 7; i++) { rankQuinary[cardIndices[i] / 4]++; }
 
-        return FLUSH_TABLE[suit_binary[SUITS_TABLE[suit_hash] - 1]];
-    }
-
-    unsigned char quinary[13] = { 0 };
-    for (int i = 0; i < 7; i++) { quinary[cards[i] / 4]++; }
-
-    const int hash = hashQuinaryResult(quinary);
-
+    int hash = hashQuinaryResult(rankQuinary);
     return NOFLUSH_TABLE[hash];
 }
 
-
-int HandEvaluator::hashQuinaryResult(const unsigned char quinary[])
+// Computes a unique hash for a hand based on rank frequency using precomputed DP table
+int HandEvaluator::hashQuinaryResult(const unsigned char rankQuinary[])
 {
     int sum = 0;
-    const int len = 13;
-    int i;
-    int k = 7;
+    int remainingCards = 7;
 
-    for (i = 0; i < len; i++) {
-        sum += DP_TABLE[quinary[i]][len - i - 1][k];
+    for (int rank = 0; rank < 13; rank++) {
+        sum += DP_TABLE[rankQuinary[rank]][13 - rank - 1][remainingCards];
+        remainingCards -= rankQuinary[rank];
 
-        k -= quinary[i];
-
-        if (k <= 0) { break; }
+        if (remainingCards <= 0) break;
     }
 
     return sum;

@@ -9,12 +9,11 @@ class Deck
   private:
     std::array<Card, 52> cards;
     size_t activeSize;
-    std::mt19937 g;
+    std::mt19937 rng;
 
   public:
     Deck();
     Card popTop();
     void shuffle();
-    bool isEmpty() const;
     int getLength() const;
 };
