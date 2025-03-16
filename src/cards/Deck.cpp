@@ -16,7 +16,6 @@ Deck::Deck() : cards{}, rng(std::random_device{}()), activeSize(52)
 Card Deck::popTop()
 {
     if (activeSize <= 0) { throw std::out_of_range("No cards left in deck"); }
-
     return cards[--activeSize];
 }
 
