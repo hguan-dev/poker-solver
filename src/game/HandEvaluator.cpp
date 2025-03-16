@@ -9,19 +9,19 @@ std::array<Card, 7> HandEvaluator::mergeHand(const std::array<Card, 2> &hand, co
     return fullHand;
 }
 
-constexpr int getSuitValue(char suit)
+constexpr int getSuitValue(Card::SUIT suit)
 {
     switch (suit) {
-    case 'H':
+    case Card::SUIT::HEARTS:
         return 0;
-    case 'D':
+    case Card::SUIT::DIAMONDS:
         return 1;
-    case 'S':
+    case Card::SUIT::SPADES:
         return 2;
-    case 'C':
+    case Card::SUIT::CLUBS:
         return 3;
     default:
-        return 999;// Should never get here...
+        return 0;// Should never get here...
     }
 }
 
@@ -40,7 +40,7 @@ int HandEvaluator::evaluateHand(const std::array<Card, 2> &hand, const std::arra
         int suitValue = getSuitValue(fullHand[i].getSuit());
 
         cardIndices[i] = (rankValue * 4) + suitValue;
-        suitHash += SUIT_SHIFT[suitValue];// Precomputed bit shift
+        suitHash += SUIT_SHIFT[suitValue];
         suitBinary[suitValue] |= (1 << rankValue);
     }
 

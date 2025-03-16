@@ -45,7 +45,7 @@ cppformat:
 
 gdb:
 	$(MAKE) build DEBUG=1
-	cd build/bin && gdb poker_solver
+	cd build/bin && gdb poker_solver_benchmarking
 
 benchmark: build 
 	@echo "Running Poker Solver Benchmark..."

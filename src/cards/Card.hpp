@@ -1,16 +1,20 @@
 #pragma once
 
-#include <string>
+// #include <string>
 
 class Card
 {
   public:
-    Card(const char &rank, const char &suit);
+    enum class SUIT { HEARTS, DIAMONDS, CLUBS, SPADES };
+
+    enum class RANK { TWO = 2, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE };
+
+    Card(RANK rank, SUIT suit);
     Card();
-    const char &getRank() const;
-    const char &getSuit() const;
+    RANK getRank() const;
+    SUIT getSuit() const;
     int getValue() const;
-    std::string toString() const;
+    // std::string toString() const;
     bool operator==(const Card &other) const
     {
         return rank == other.rank && suit == other.suit;
@@ -22,6 +26,6 @@ class Card
     }
 
   private:
-    char rank;
-    char suit;
+    RANK rank;
+    SUIT suit;
 };

@@ -23,11 +23,9 @@ TEST(PlayerTest, PlayerHand)
 {
     Player player(100);
 
-    std::array<Card, 2> hand = { Card('J', 'S'), Card('K', 'H') };
+    std::array<Card, 2> hand = { Card(Card::RANK::TEN, Card::SUIT::HEARTS), Card(Card::RANK::KING, Card::SUIT::CLUBS) };
 
     player.setHand(hand);
 
     ASSERT_EQ(player.getHand().size(), 2);
-    EXPECT_EQ(player.getHand()[0].toString(), "J of Spades");
-    EXPECT_EQ(player.getHand()[1].toString(), "K of Hearts");
 }

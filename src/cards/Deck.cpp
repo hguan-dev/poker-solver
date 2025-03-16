@@ -4,12 +4,26 @@
 
 Deck::Deck() : cards{}, rng(std::random_device{}()), activeSize(52)
 {
-    const char suits[4] = { 'H', 'D', 'C', 'S' };
-    const char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+    static constexpr std::array<Card::SUIT, 4> suits = {
+        Card::SUIT::CLUBS, Card::SUIT::HEARTS, Card::SUIT::DIAMONDS, Card::SUIT::SPADES
+    };
+    static constexpr std::array<Card::RANK, 13> ranks = { Card::RANK::TWO,
+        Card::RANK::THREE,
+        Card::RANK::FOUR,
+        Card::RANK::FIVE,
+        Card::RANK::SIX,
+        Card::RANK::SEVEN,
+        Card::RANK::EIGHT,
+        Card::RANK::NINE,
+        Card::RANK::TEN,
+        Card::RANK::JACK,
+        Card::RANK::QUEEN,
+        Card::RANK::KING,
+        Card::RANK::ACE };
 
     size_t index = 0;
-    for (char suit : suits) {
-        for (char rank : ranks) { cards[index++] = Card(rank, suit); }
+    for (const auto &suit : suits) {
+        for (const auto &rank : ranks) { cards[index++] = Card(rank, suit); }
     }
 }
 

@@ -1,13 +1,6 @@
 #include "Card.hpp"
 #include "HandEvaluator.hpp"
-#include <gtest/gtest.h>
-
-using cardArr2 = std::array<Card, 2>;
-using cardArr5 = std::array<Card, 5>;
-
-
-#include "Card.hpp"
-#include "HandEvaluator.hpp"
+#include <array>
 #include <gtest/gtest.h>
 
 using cardArr2 = std::array<Card, 2>;
@@ -15,16 +8,18 @@ using cardArr5 = std::array<Card, 5>;
 
 // -----------------------------------------------------------------
 // Adjacent ranking comparisons (10 tests)
+
 // 1. Royal Flush beats Straight Flush
 TEST(HandEvaluatorComparison, RoyalFlushBeatsStraightFlush)
 {
     HandEvaluator evaluator;
-    // Board provides 4 hearts needed for a royal flush but not enough to form a straight flush on its own.
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    // Hole cards complete the royal flush.
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    // Opponent’s hole cards complete a lower straight flush (9♥ + board T,J,Q,K).
-    cardArr2 straightFlush = { Card('9', 'H'), Card('4', 'C') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 straightFlush = { Card(Card::RANK::NINE, Card::SUIT::HEARTS), Card(Card::RANK::FOUR, Card::SUIT::CLUBS) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
@@ -35,12 +30,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsStraightFlush)
 TEST(HandEvaluatorComparison, StraightFlushBeatsQuads)
 {
     HandEvaluator evaluator;
-    // Board has a pair plus three suited cards in sequence.
-    cardArr5 community = { Card('Q', 'H'), Card('Q', 'C'), Card('7', 'H'), Card('8', 'H'), Card('9', 'H') };
-    // Hole cards form a straight flush: 6♥ and T♥ complete 6-7-8-9-T of hearts.
-    cardArr2 straightFlush = { Card('6', 'H'), Card('T', 'H') };
-    // Opponent’s hole cards form quads: with two Q’s in hand joining the pair on board.
-    cardArr2 quads = { Card('Q', 'D'), Card('Q', 'S') };
+    cardArr5 community = { Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::CLUBS),
+        Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS) };
+    cardArr2 straightFlush = { Card(Card::RANK::SIX, Card::SUIT::HEARTS), Card(Card::RANK::TEN, Card::SUIT::HEARTS) };
+    cardArr2 quads = { Card(Card::RANK::QUEEN, Card::SUIT::DIAMONDS), Card(Card::RANK::QUEEN, Card::SUIT::SPADES) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int quadsVal = evaluator.evaluateHand(quads, community);
@@ -51,12 +47,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsQuads)
 TEST(HandEvaluatorComparison, QuadsBeatsFullHouse)
 {
     HandEvaluator evaluator;
-    // Board with three 9’s and two kickers.
-    cardArr5 community = { Card('9', 'S'), Card('9', 'H'), Card('9', 'D'), Card('K', 'C'), Card('Q', 'C') };
-    // With hole cards, one hand makes quads (four 9’s).
-    cardArr2 quads = { Card('9', 'C'), Card('2', 'S') };
-    // Other hand uses hole cards to form a full house (jacks full of 9’s).
-    cardArr2 fullHouse = { Card('K', 'D'), Card('K', 'H') };
+    cardArr5 community = { Card(Card::RANK::NINE, Card::SUIT::SPADES),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::KING, Card::SUIT::CLUBS),
+        Card(Card::RANK::QUEEN, Card::SUIT::CLUBS) };
+    cardArr2 quads = { Card(Card::RANK::NINE, Card::SUIT::CLUBS), Card(Card::RANK::TWO, Card::SUIT::SPADES) };
+    cardArr2 fullHouse = { Card(Card::RANK::KING, Card::SUIT::DIAMONDS), Card(Card::RANK::KING, Card::SUIT::HEARTS) };
 
     int quadsVal = evaluator.evaluateHand(quads, community);
     int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
@@ -67,12 +64,13 @@ TEST(HandEvaluatorComparison, QuadsBeatsFullHouse)
 TEST(HandEvaluatorComparison, FullHouseBeatsFlush)
 {
     HandEvaluator evaluator;
-    // Board has a pair (5’s) but not a flush on its own.
-    cardArr5 community = { Card('2', 'H'), Card('5', 'H'), Card('5', 'D'), Card('K', 'D'), Card('3', 'H') };
-    // Hole cards that combine with board to form a full house (kings full of 5’s).
-    cardArr2 fullHouse = { Card('K', 'H'), Card('K', 'C') };
-    // Opponent’s hole cards yield a flush in hearts.
-    cardArr2 flush = { Card('9', 'H'), Card('J', 'H') };
+    cardArr5 community = { Card(Card::RANK::TWO, Card::SUIT::HEARTS),
+        Card(Card::RANK::FIVE, Card::SUIT::HEARTS),
+        Card(Card::RANK::FIVE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::KING, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::THREE, Card::SUIT::HEARTS) };
+    cardArr2 fullHouse = { Card(Card::RANK::KING, Card::SUIT::HEARTS), Card(Card::RANK::KING, Card::SUIT::CLUBS) };
+    cardArr2 flush = { Card(Card::RANK::NINE, Card::SUIT::HEARTS), Card(Card::RANK::JACK, Card::SUIT::HEARTS) };
 
     int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
     int flushVal = evaluator.evaluateHand(flush, community);
@@ -83,12 +81,13 @@ TEST(HandEvaluatorComparison, FullHouseBeatsFlush)
 TEST(HandEvaluatorComparison, FlushBeatsStraight)
 {
     HandEvaluator evaluator;
-    // Board with three hearts (and two offsuit) so that flush and straight are possible.
-    cardArr5 community = { Card('4', 'H'), Card('5', 'H'), Card('9', 'H'), Card('T', 'C'), Card('J', 'D') };
-    // One hand gets a flush by adding two hearts.
-    cardArr2 flushHand = { Card('2', 'H'), Card('8', 'H') };
-    // Other hand makes a straight (using 7 and 8 off-suit with board T,J, plus 9).
-    cardArr2 straightHand = { Card('7', 'C'), Card('8', 'C') };
+    cardArr5 community = { Card(Card::RANK::FOUR, Card::SUIT::HEARTS),
+        Card(Card::RANK::FIVE, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::TEN, Card::SUIT::CLUBS),
+        Card(Card::RANK::JACK, Card::SUIT::DIAMONDS) };
+    cardArr2 flushHand = { Card(Card::RANK::TWO, Card::SUIT::HEARTS), Card(Card::RANK::EIGHT, Card::SUIT::HEARTS) };
+    cardArr2 straightHand = { Card(Card::RANK::SEVEN, Card::SUIT::CLUBS), Card(Card::RANK::EIGHT, Card::SUIT::CLUBS) };
 
     int flushVal = evaluator.evaluateHand(flushHand, community);
     int straightVal = evaluator.evaluateHand(straightHand, community);
@@ -99,12 +98,13 @@ TEST(HandEvaluatorComparison, FlushBeatsStraight)
 TEST(HandEvaluatorComparison, StraightBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
-    // A neutral board that doesn’t itself form a straight.
-    cardArr5 community = { Card('3', 'D'), Card('5', 'C'), Card('7', 'H'), Card('Q', 'S'), Card('K', 'D') };
-    // Hole cards that complete a straight: 4 and 6 make 3-4-5-6-7.
-    cardArr2 straightHand = { Card('4', 'H'), Card('6', 'H') };
-    // Other hand makes three-of-a-kind (using 7’s).
-    cardArr2 trips = { Card('7', 'C'), Card('7', 'D') };
+    cardArr5 community = { Card(Card::RANK::THREE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::FIVE, Card::SUIT::CLUBS),
+        Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::SPADES),
+        Card(Card::RANK::KING, Card::SUIT::DIAMONDS) };
+    cardArr2 straightHand = { Card(Card::RANK::FOUR, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
+    cardArr2 trips = { Card(Card::RANK::SEVEN, Card::SUIT::CLUBS), Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS) };
 
     int straightVal = evaluator.evaluateHand(straightHand, community);
     int tripsVal = evaluator.evaluateHand(trips, community);
@@ -115,12 +115,13 @@ TEST(HandEvaluatorComparison, StraightBeatsThreeOfAKind)
 TEST(HandEvaluatorComparison, ThreeOfAKindBeatsTwoPair)
 {
     HandEvaluator evaluator;
-    // Neutral board with no inherent pair.
-    cardArr5 community = { Card('2', 'C'), Card('5', 'D'), Card('9', 'H'), Card('K', 'S'), Card('3', 'D') };
-    // Hand that makes three-of-a-kind (with 9’s).
-    cardArr2 trips = { Card('9', 'C'), Card('9', 'D') };
-    // Hand that makes two pair (using K and 5 from hole cards).
-    cardArr2 twoPair = { Card('K', 'D'), Card('5', 'C') };
+    cardArr5 community = { Card(Card::RANK::TWO, Card::SUIT::CLUBS),
+        Card(Card::RANK::FIVE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::SPADES),
+        Card(Card::RANK::THREE, Card::SUIT::DIAMONDS) };
+    cardArr2 trips = { Card(Card::RANK::NINE, Card::SUIT::CLUBS), Card(Card::RANK::NINE, Card::SUIT::DIAMONDS) };
+    cardArr2 twoPair = { Card(Card::RANK::KING, Card::SUIT::DIAMONDS), Card(Card::RANK::FIVE, Card::SUIT::CLUBS) };
 
     int tripsVal = evaluator.evaluateHand(trips, community);
     int twoPairVal = evaluator.evaluateHand(twoPair, community);
@@ -131,11 +132,13 @@ TEST(HandEvaluatorComparison, ThreeOfAKindBeatsTwoPair)
 TEST(HandEvaluatorComparison, TwoPairBeatsOnePair)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('4', 'C'), Card('7', 'D'), Card('9', 'H'), Card('J', 'S'), Card('3', 'D') };
-    // Hand with two pair (4’s and 7’s).
-    cardArr2 twoPair = { Card('4', 'H'), Card('7', 'C') };
-    // Hand with one pair (pair of 4’s).
-    cardArr2 onePair = { Card('4', 'D'), Card('2', 'C') };
+    cardArr5 community = { Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::SPADES),
+        Card(Card::RANK::THREE, Card::SUIT::DIAMONDS) };
+    cardArr2 twoPair = { Card(Card::RANK::FOUR, Card::SUIT::HEARTS), Card(Card::RANK::SEVEN, Card::SUIT::CLUBS) };
+    cardArr2 onePair = { Card(Card::RANK::FOUR, Card::SUIT::DIAMONDS), Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
 
     int twoPairVal = evaluator.evaluateHand(twoPair, community);
     int onePairVal = evaluator.evaluateHand(onePair, community);
@@ -146,11 +149,13 @@ TEST(HandEvaluatorComparison, TwoPairBeatsOnePair)
 TEST(HandEvaluatorComparison, OnePairBeatsHighCard)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('4', 'C'), Card('7', 'D'), Card('9', 'H'), Card('J', 'S'), Card('3', 'D') };
-    // Hand that makes one pair (pair of J’s from hole card + board).
-    cardArr2 onePair = { Card('J', 'D'), Card('2', 'C') };
-    // Hand that is only high card.
-    cardArr2 highCard = { Card('A', 'C'), Card('8', 'S') };
+    cardArr5 community = { Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::SPADES),
+        Card(Card::RANK::THREE, Card::SUIT::DIAMONDS) };
+    cardArr2 onePair = { Card(Card::RANK::JACK, Card::SUIT::DIAMONDS), Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 highCard = { Card(Card::RANK::ACE, Card::SUIT::CLUBS), Card(Card::RANK::EIGHT, Card::SUIT::SPADES) };
 
     int onePairVal = evaluator.evaluateHand(onePair, community);
     int highCardVal = evaluator.evaluateHand(highCard, community);
@@ -161,10 +166,13 @@ TEST(HandEvaluatorComparison, OnePairBeatsHighCard)
 TEST(HandEvaluatorComparison, HighCardTie)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('4', 'C'), Card('7', 'D'), Card('9', 'H'), Card('J', 'S'), Card('K', 'D') };
-    // Both players have hole cards that do not improve on the board.
-    cardArr2 highCard1 = { Card('2', 'C'), Card('3', 'D') };
-    cardArr2 highCard2 = { Card('3', 'C'), Card('2', 'D') };
+    cardArr5 community = { Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::SPADES),
+        Card(Card::RANK::KING, Card::SUIT::DIAMONDS) };
+    cardArr2 highCard1 = { Card(Card::RANK::TWO, Card::SUIT::CLUBS), Card(Card::RANK::THREE, Card::SUIT::DIAMONDS) };
+    cardArr2 highCard2 = { Card(Card::RANK::THREE, Card::SUIT::CLUBS), Card(Card::RANK::TWO, Card::SUIT::DIAMONDS) };
 
     int highCardVal1 = evaluator.evaluateHand(highCard1, community);
     int highCardVal2 = evaluator.evaluateHand(highCard2, community);
@@ -178,12 +186,13 @@ TEST(HandEvaluatorComparison, HighCardTie)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsQuads)
 {
     HandEvaluator evaluator;
-    // Board provides four suited cards that serve double duty:
-    // It gives a royal flush for one hand and a pair for kings for the other.
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('K', 'D') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    // Opponent’s hole cards complete quads of kings.
-    cardArr2 quads = { Card('K', 'C'), Card('K', 'S') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::DIAMONDS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 quads = { Card(Card::RANK::KING, Card::SUIT::CLUBS), Card(Card::RANK::KING, Card::SUIT::SPADES) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int quadsVal = evaluator.evaluateHand(quads, community);
@@ -194,11 +203,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsQuads)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsFullHouse)
 {
     HandEvaluator evaluator;
-    // Board has four royal cards plus an extra that makes a pair.
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('T', 'D') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    // Opponent forms full house using two jacks.
-    cardArr2 fullHouse = { Card('J', 'C'), Card('J', 'D') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TEN, Card::SUIT::DIAMONDS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 fullHouse = { Card(Card::RANK::JACK, Card::SUIT::CLUBS), Card(Card::RANK::JACK, Card::SUIT::DIAMONDS) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
@@ -209,9 +220,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsFullHouse)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsFlush)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    cardArr2 flush = { Card('9', 'H'), Card('4', 'H') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 flush = { Card(Card::RANK::NINE, Card::SUIT::HEARTS), Card(Card::RANK::FOUR, Card::SUIT::HEARTS) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int flushVal = evaluator.evaluateHand(flush, community);
@@ -222,10 +237,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsFlush)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsStraight)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    // Opponent’s hole cards complete a straight (8 and 9, joining T,J,Q).
-    cardArr2 straight = { Card('9', 'C'), Card('8', 'D') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 straight = { Card(Card::RANK::NINE, Card::SUIT::CLUBS), Card(Card::RANK::EIGHT, Card::SUIT::DIAMONDS) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int straightVal = evaluator.evaluateHand(straight, community);
@@ -236,10 +254,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsStraight)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    // Opponent’s hole cards make trips (using the board 2).
-    cardArr2 trips = { Card('2', 'D'), Card('2', 'S') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 trips = { Card(Card::RANK::TWO, Card::SUIT::DIAMONDS), Card(Card::RANK::TWO, Card::SUIT::SPADES) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int tripsVal = evaluator.evaluateHand(trips, community);
@@ -250,10 +271,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsThreeOfAKind)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsTwoPair)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('3', 'C') };
-    // Opponent’s hole cards form two pair.
-    cardArr2 twoPair = { Card('T', 'C'), Card('J', 'C') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
+    cardArr2 twoPair = { Card(Card::RANK::TEN, Card::SUIT::CLUBS), Card(Card::RANK::JACK, Card::SUIT::CLUBS) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int twoPairVal = evaluator.evaluateHand(twoPair, community);
@@ -264,10 +288,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsTwoPair)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsOnePair)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('4', 'C') };
-    // Opponent’s hole cards form one pair (pair of 3’s).
-    cardArr2 onePair = { Card('3', 'D'), Card('3', 'S') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::FOUR, Card::SUIT::CLUBS) };
+    cardArr2 onePair = { Card(Card::RANK::THREE, Card::SUIT::DIAMONDS), Card(Card::RANK::THREE, Card::SUIT::SPADES) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int onePairVal = evaluator.evaluateHand(onePair, community);
@@ -278,10 +305,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsOnePair)
 TEST(HandEvaluatorComparison, RoyalFlushBeatsHighCard)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('T', 'H'), Card('J', 'H'), Card('Q', 'H'), Card('K', 'H'), Card('2', 'C') };
-    cardArr2 royalFlush = { Card('A', 'H'), Card('4', 'C') };
-    // Opponent’s hole cards do not improve on the board.
-    cardArr2 highCard = { Card('8', 'D'), Card('7', 'S') };
+    cardArr5 community = { Card(Card::RANK::TEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::JACK, Card::SUIT::HEARTS),
+        Card(Card::RANK::QUEEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 royalFlush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::FOUR, Card::SUIT::CLUBS) };
+    cardArr2 highCard = { Card(Card::RANK::EIGHT, Card::SUIT::DIAMONDS), Card(Card::RANK::SEVEN, Card::SUIT::SPADES) };
 
     int royalFlushVal = evaluator.evaluateHand(royalFlush, community);
     int highCardVal = evaluator.evaluateHand(highCard, community);
@@ -292,12 +322,13 @@ TEST(HandEvaluatorComparison, RoyalFlushBeatsHighCard)
 TEST(HandEvaluatorComparison, StraightFlushBeatsFullHouse)
 {
     HandEvaluator evaluator;
-    // Board with three hearts in sequence and a pair of kings.
-    cardArr5 community = { Card('6', 'H'), Card('7', 'H'), Card('8', 'H'), Card('K', 'S'), Card('K', 'D') };
-    // Opponent’s hole cards form a straight flush.
-    cardArr2 straightFlush = { Card('4', 'H'), Card('5', 'H') };
-    // Other hand makes a full house (using a king and an 8).
-    cardArr2 fullHouse = { Card('K', 'H'), Card('8', 'S') };
+    cardArr5 community = { Card(Card::RANK::SIX, Card::SUIT::HEARTS),
+        Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::KING, Card::SUIT::SPADES),
+        Card(Card::RANK::KING, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FOUR, Card::SUIT::HEARTS), Card(Card::RANK::FIVE, Card::SUIT::HEARTS) };
+    cardArr2 fullHouse = { Card(Card::RANK::KING, Card::SUIT::HEARTS), Card(Card::RANK::EIGHT, Card::SUIT::SPADES) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int fullHouseVal = evaluator.evaluateHand(fullHouse, community);
@@ -308,10 +339,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsFullHouse)
 TEST(HandEvaluatorComparison, StraightFlushBeatsFlush)
 {
     HandEvaluator evaluator;
-    // Board with three hearts (but not in sequence) plus two neutral cards.
-    cardArr5 community = { Card('6', 'H'), Card('7', 'H'), Card('8', 'H'), Card('2', 'C'), Card('3', 'D') };
-    cardArr2 straightFlush = { Card('4', 'H'), Card('5', 'H') };
-    cardArr2 flush = { Card('9', 'H'), Card('Q', 'H') };
+    cardArr5 community = { Card(Card::RANK::SIX, Card::SUIT::HEARTS),
+        Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::TWO, Card::SUIT::CLUBS),
+        Card(Card::RANK::THREE, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FOUR, Card::SUIT::HEARTS), Card(Card::RANK::FIVE, Card::SUIT::HEARTS) };
+    cardArr2 flush = { Card(Card::RANK::NINE, Card::SUIT::HEARTS), Card(Card::RANK::QUEEN, Card::SUIT::HEARTS) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int flushVal = evaluator.evaluateHand(flush, community);
@@ -322,11 +356,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsFlush)
 TEST(HandEvaluatorComparison, StraightFlushBeatsStraight)
 {
     HandEvaluator evaluator;
-    // Board that does not itself form a straight.
-    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
-    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
-    // Opponent’s hole cards make a straight.
-    cardArr2 straight = { Card('T', 'C'), Card('J', 'C') };
+    cardArr5 community = { Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::TWO, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FIVE, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
+    cardArr2 straight = { Card(Card::RANK::TEN, Card::SUIT::CLUBS), Card(Card::RANK::JACK, Card::SUIT::CLUBS) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int straightVal = evaluator.evaluateHand(straight, community);
@@ -337,9 +373,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsStraight)
 TEST(HandEvaluatorComparison, StraightFlushBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
-    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
-    cardArr2 trips = { Card('7', 'C'), Card('7', 'D') };
+    cardArr5 community = { Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::TWO, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FIVE, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
+    cardArr2 trips = { Card(Card::RANK::SEVEN, Card::SUIT::CLUBS), Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int tripsVal = evaluator.evaluateHand(trips, community);
@@ -350,9 +390,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsThreeOfAKind)
 TEST(HandEvaluatorComparison, StraightFlushBeatsTwoPair)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
-    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
-    cardArr2 twoPair = { Card('7', 'C'), Card('8', 'C') };
+    cardArr5 community = { Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::TWO, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FIVE, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
+    cardArr2 twoPair = { Card(Card::RANK::SEVEN, Card::SUIT::CLUBS), Card(Card::RANK::EIGHT, Card::SUIT::CLUBS) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int twoPairVal = evaluator.evaluateHand(twoPair, community);
@@ -363,9 +407,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsTwoPair)
 TEST(HandEvaluatorComparison, StraightFlushBeatsOnePair)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
-    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
-    cardArr2 onePair = { Card('7', 'C'), Card('3', 'D') };
+    cardArr5 community = { Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::TWO, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FIVE, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
+    cardArr2 onePair = { Card(Card::RANK::SEVEN, Card::SUIT::CLUBS), Card(Card::RANK::THREE, Card::SUIT::DIAMONDS) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int onePairVal = evaluator.evaluateHand(onePair, community);
@@ -376,9 +424,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsOnePair)
 TEST(HandEvaluatorComparison, StraightFlushBeatsHighCard)
 {
     HandEvaluator evaluator;
-    cardArr5 community = { Card('7', 'H'), Card('8', 'H'), Card('9', 'H'), Card('4', 'C'), Card('2', 'D') };
-    cardArr2 straightFlush = { Card('5', 'H'), Card('6', 'H') };
-    cardArr2 highCard = { Card('A', 'C'), Card('3', 'C') };
+    cardArr5 community = { Card(Card::RANK::SEVEN, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::TWO, Card::SUIT::DIAMONDS) };
+    cardArr2 straightFlush = { Card(Card::RANK::FIVE, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
+    cardArr2 highCard = { Card(Card::RANK::ACE, Card::SUIT::CLUBS), Card(Card::RANK::THREE, Card::SUIT::CLUBS) };
 
     int straightFlushVal = evaluator.evaluateHand(straightFlush, community);
     int highCardVal = evaluator.evaluateHand(highCard, community);
@@ -389,10 +441,13 @@ TEST(HandEvaluatorComparison, StraightFlushBeatsHighCard)
 TEST(HandEvaluatorComparison, QuadsBeatsFlush)
 {
     HandEvaluator evaluator;
-    // Board with a pair of hearts (and one heart among the quads rank).
-    cardArr5 community = { Card('9', 'S'), Card('9', 'H'), Card('9', 'D'), Card('4', 'H'), Card('7', 'H') };
-    cardArr2 quads = { Card('9', 'C'), Card('2', 'S') };
-    cardArr2 flush = { Card('A', 'H'), Card('K', 'H') };
+    cardArr5 community = { Card(Card::RANK::NINE, Card::SUIT::SPADES),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::FOUR, Card::SUIT::HEARTS),
+        Card(Card::RANK::SEVEN, Card::SUIT::HEARTS) };
+    cardArr2 quads = { Card(Card::RANK::NINE, Card::SUIT::CLUBS), Card(Card::RANK::TWO, Card::SUIT::SPADES) };
+    cardArr2 flush = { Card(Card::RANK::ACE, Card::SUIT::HEARTS), Card(Card::RANK::KING, Card::SUIT::HEARTS) };
 
     int quadsVal = evaluator.evaluateHand(quads, community);
     int flushVal = evaluator.evaluateHand(flush, community);
@@ -403,10 +458,13 @@ TEST(HandEvaluatorComparison, QuadsBeatsFlush)
 TEST(HandEvaluatorComparison, QuadsBeatsStraight)
 {
     HandEvaluator evaluator;
-    // Board that gives a pair plus extra cards.
-    cardArr5 community = { Card('9', 'S'), Card('9', 'H'), Card('9', 'D'), Card('8', 'S'), Card('7', 'D') };
-    cardArr2 quads = { Card('9', 'C'), Card('2', 'C') };
-    cardArr2 straight = { Card('T', 'C'), Card('J', 'C') };
+    cardArr5 community = { Card(Card::RANK::NINE, Card::SUIT::SPADES),
+        Card(Card::RANK::NINE, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::EIGHT, Card::SUIT::SPADES),
+        Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS) };
+    cardArr2 quads = { Card(Card::RANK::NINE, Card::SUIT::CLUBS), Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 straight = { Card(Card::RANK::TEN, Card::SUIT::CLUBS), Card(Card::RANK::JACK, Card::SUIT::CLUBS) };
 
     int quadsVal = evaluator.evaluateHand(quads, community);
     int straightVal = evaluator.evaluateHand(straight, community);
@@ -417,10 +475,13 @@ TEST(HandEvaluatorComparison, QuadsBeatsStraight)
 TEST(HandEvaluatorComparison, QuadsBeatsThreeOfAKind)
 {
     HandEvaluator evaluator;
-    // Board with three 5’s.
-    cardArr5 community = { Card('5', 'C'), Card('5', 'D'), Card('5', 'H'), Card('8', 'S'), Card('7', 'D') };
-    cardArr2 quads = { Card('5', 'S'), Card('2', 'C') };
-    cardArr2 trips = { Card('8', 'C'), Card('8', 'D') };
+    cardArr5 community = { Card(Card::RANK::FIVE, Card::SUIT::CLUBS),
+        Card(Card::RANK::FIVE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::FIVE, Card::SUIT::HEARTS),
+        Card(Card::RANK::EIGHT, Card::SUIT::SPADES),
+        Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS) };
+    cardArr2 quads = { Card(Card::RANK::FIVE, Card::SUIT::SPADES), Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 trips = { Card(Card::RANK::EIGHT, Card::SUIT::CLUBS), Card(Card::RANK::EIGHT, Card::SUIT::DIAMONDS) };
 
     int quadsVal = evaluator.evaluateHand(quads, community);
     int tripsVal = evaluator.evaluateHand(trips, community);
@@ -431,10 +492,13 @@ TEST(HandEvaluatorComparison, QuadsBeatsThreeOfAKind)
 TEST(HandEvaluatorComparison, QuadsBeatsTwoPair)
 {
     HandEvaluator evaluator;
-    // Board with three 4’s.
-    cardArr5 community = { Card('4', 'C'), Card('4', 'D'), Card('4', 'H'), Card('9', 'S'), Card('7', 'D') };
-    cardArr2 quads = { Card('4', 'S'), Card('2', 'C') };
-    cardArr2 twoPair = { Card('9', 'C'), Card('7', 'C') };
+    cardArr5 community = { Card(Card::RANK::FOUR, Card::SUIT::CLUBS),
+        Card(Card::RANK::FOUR, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::FOUR, Card::SUIT::HEARTS),
+        Card(Card::RANK::NINE, Card::SUIT::SPADES),
+        Card(Card::RANK::SEVEN, Card::SUIT::DIAMONDS) };
+    cardArr2 quads = { Card(Card::RANK::FOUR, Card::SUIT::SPADES), Card(Card::RANK::TWO, Card::SUIT::CLUBS) };
+    cardArr2 twoPair = { Card(Card::RANK::NINE, Card::SUIT::CLUBS), Card(Card::RANK::SEVEN, Card::SUIT::CLUBS) };
 
     int quadsVal = evaluator.evaluateHand(quads, community);
     int twoPairVal = evaluator.evaluateHand(twoPair, community);
@@ -445,12 +509,16 @@ TEST(HandEvaluatorComparison, QuadsBeatsTwoPair)
 TEST(HandEvaluatorComparison, QuadsBeatsOnePair)
 {
     HandEvaluator evaluator;
-    // Use a board that provides a pair (but not a set) so that a pair in the hand remains just one pair.
-    cardArr5 community = { Card('3', 'C'), Card('3', 'D'), Card('8', 'H'), Card('T', 'S'), Card('Q', 'D') };
-    cardArr2 quads = { Card('3', 'H'), Card('3', 'S') };
-    cardArr2 onePair = { Card('4', 'H'), Card('6', 'H') };
+    cardArr5 community = { Card(Card::RANK::THREE, Card::SUIT::CLUBS),
+        Card(Card::RANK::THREE, Card::SUIT::DIAMONDS),
+        Card(Card::RANK::EIGHT, Card::SUIT::HEARTS),
+        Card(Card::RANK::TEN, Card::SUIT::SPADES),
+        Card(Card::RANK::QUEEN, Card::SUIT::DIAMONDS) };
+    cardArr2 quads = { Card(Card::RANK::THREE, Card::SUIT::HEARTS), Card(Card::RANK::THREE, Card::SUIT::SPADES) };
+    cardArr2 onePair = { Card(Card::RANK::FOUR, Card::SUIT::HEARTS), Card(Card::RANK::SIX, Card::SUIT::HEARTS) };
 
     int quadsVal = evaluator.evaluateHand(quads, community);
     int onePairVal = evaluator.evaluateHand(onePair, community);
     EXPECT_LT(quadsVal, onePairVal);
 }
+
