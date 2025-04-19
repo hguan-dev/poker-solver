@@ -2,7 +2,7 @@
 #include <fmt/core.h>
 
 Card::Card(RANK rank, SUIT suit) : rank(rank), suit(suit) {}
-Card::Card() : rank(RANK::TWO), suit(SUIT::HEARTS) {}
+Card::Card() : rank(RANK::INVALID), suit(SUIT::INVALID) {}
 
 Card::RANK Card::getRank() const
 {
