@@ -34,8 +34,8 @@ cpptest: build
 lint: cpplint
 
 cpplint: build
-	run-clang-tidy -p build
-	find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) | xargs run-clang-tidy -p build --
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) | xargs clang-format --dry-run --Werror
 
 format: cppformat
 
@@ -45,7 +45,7 @@ cppformat:
 
 gdb:
 	$(MAKE) build DEBUG=1
-	cd build/bin && gdb poker_solver
+	cd build/bin && gdb poker_solver_benchmarking
 
 benchmark: build 
 	@echo "Running Poker Solver Benchmark..."
@@ -67,3 +67,20 @@ prof:
 	@echo "Generating profiling report..."
 	@cd build/bin && gprof poker_solver gmon.out > profile_report.txt
 	@echo "Profiling complete. See build/bin/profile_report.txt"
+
+perf:
+	@echo "Building Poker Solver with Profiling..."
+	mkdir -p build
+	cd build && cmake .. \
+		-DCMAKE_TOOLCHAIN_FILE=../build/conan_toolchain.cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DPROFILING=ON \
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+		-G Ninja
+	cd build && cmake --build .
+	@echo "Running Poker Solver Benchmark with Profiling using perf..."
+	@cd build/bin && perf record --call-graph=dwarf -o perf.data ./poker_solver_benchmarking
+	@echo "Generating perf report..."
+	@cd build/bin &&  perf report --stdio --sort=overhead --percent-limit 5 > profile_report.txt
+	@echo "Profiling complete. See build/bin/profile_report.txt"
+

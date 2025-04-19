@@ -2,32 +2,41 @@
 #include <algorithm>
 #include <stdexcept>
 
-Deck::Deck() : g(std::random_device{}())
+Deck::Deck() : cards{}, rng(std::random_device{}()), activeSize(52)
 {
-    const char suits[4] = { 'H', 'D', 'C', 'S' };
-    const char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+    static constexpr std::array<Card::SUIT, 4> suits = {
+        Card::SUIT::CLUBS, Card::SUIT::HEARTS, Card::SUIT::DIAMONDS, Card::SUIT::SPADES
+    };
+    static constexpr std::array<Card::RANK, 13> ranks = { Card::RANK::TWO,
+        Card::RANK::THREE,
+        Card::RANK::FOUR,
+        Card::RANK::FIVE,
+        Card::RANK::SIX,
+        Card::RANK::SEVEN,
+        Card::RANK::EIGHT,
+        Card::RANK::NINE,
+        Card::RANK::TEN,
+        Card::RANK::JACK,
+        Card::RANK::QUEEN,
+        Card::RANK::KING,
+        Card::RANK::ACE };
 
-    for (const char &suit : suits) {
-        for (const char &rank : ranks) { cards.emplace_back(rank, suit); }
+    size_t index = 0;
+    for (const auto &suit : suits) {
+        for (const auto &rank : ranks) { cards[index++] = Card(rank, suit); }
     }
-    activeSize = cards.size();
 }
 
 Card Deck::popTop()
 {
-    if (isEmpty()) { throw std::out_of_range("No cards left in deck"); }
-    return std::move(cards[--activeSize]);
+    if (activeSize <= 0) { throw std::out_of_range("No cards left in deck"); }
+    return cards[--activeSize];
 }
 
 void Deck::shuffle()
 {
-    std::shuffle(cards.begin(), cards.end(), g);
-    activeSize = cards.size();
-}
-
-bool Deck::isEmpty() const
-{
-    return activeSize == 0;
+    activeSize = 52;
+    std::shuffle(cards.begin(), cards.begin() + activeSize, rng);
 }
 
 int Deck::getLength() const

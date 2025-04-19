@@ -30,7 +30,6 @@ find_package(fmt REQUIRED)
 file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp src/utils/*.cpp)
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE BENCHMARK_SOURCES benchmarking/*.cpp)
-file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
 
 # Common include directories
 set(COMMON_INCLUDE_DIRS src src/cards src/game src/players src/utils ${GTest_INCLUDE_DIRS})
@@ -50,18 +49,29 @@ if(BENCHMARK_SOURCES)
     target_link_libraries(poker_solver_benchmarking PRIVATE ${COMMON_LINK_LIBRARIES})
 endif()
 
-# Test executable
-if(TEST_SOURCES)
-    add_executable(poker_solver_tests ${TEST_SOURCES} ${IMPLEMENTATION_SOURCES})
-    target_include_directories(poker_solver_tests PRIVATE ${COMMON_INCLUDE_DIRS})
-    target_link_libraries(poker_solver_tests PRIVATE ${COMMON_LINK_LIBRARIES})
+# Find all unit test source files (e.g. tests/unit/*.cpp)
+file(GLOB UNIT_TEST_SOURCES tests/unit/*.cpp)
 
+if(UNIT_TEST_SOURCES)
     enable_testing()
-    add_test(NAME poker_solver_tests COMMAND poker_solver_tests)
+    foreach(test_src ${UNIT_TEST_SOURCES})
+        # Get the test name from the file name (without extension)
+        get_filename_component(test_name ${test_src} NAME_WE)
+        add_executable(${test_name} ${test_src} ${IMPLEMENTATION_SOURCES})
+        target_include_directories(${test_name} PRIVATE ${COMMON_INCLUDE_DIRS})
+        target_link_libraries(${test_name} PRIVATE ${COMMON_LINK_LIBRARIES})
+        # Set the runtime output directory for each test executable
+        set_target_properties(${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+        # Register each test executable with CTest using its name.
+        add_test(NAME ${test_name} COMMAND ${test_name})
+    endforeach()
 else()
-    message(WARNING "No test files found in the 'tests/' directory.")
+    message(WARNING "No unit test files found in tests/unit.")
 endif()
 
-# Set output directory for all targets
-set_target_properties(poker_solver poker_solver_benchmarking poker_solver_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# Set output directory for main and benchmarking executables
+set_target_properties(poker_solver PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+if(BENCHMARK_SOURCES)
+    set_target_properties(poker_solver_benchmarking PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
 

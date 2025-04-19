@@ -1,48 +1,15 @@
 #pragma once
 
 #include "Card.hpp"
-#include <algorithm>
-#include <string>
-#include <vector>
-
+#include "HandHashes.hpp"
+#include <array>
 
 class HandEvaluator
 {
   public:
-    enum class HandRank {
-        HIGH_CARD,
-        ONE_PAIR,
-        TWO_PAIR,
-        THREE_OF_A_KIND,
-        STRAIGHT,
-        FLUSH,
-        FULL_HOUSE,
-        FOUR_OF_A_KIND,
-        STRAIGHT_FLUSH,
-        ROYAL_FLUSH
-    };
-
-    class HandResult
-    {
-      public:
-        HandRank rank;
-        std::vector<int> identifier;
-        std::vector<int> highCards;
-
-        std::string toString() const;
-        bool operator==(const HandResult &other) const;
-        bool operator>(const HandResult &other) const;
-        bool operator<(const HandResult &other) const;
-    };
-
-    HandResult evaluateHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
+    int evaluateHand(const std::array<Card, 2> &hand, const std::array<Card, 5> &communityCards);
+    int hashQuinaryResult(const std::array<unsigned char, 13> &rankQuinary);
 
   private:
-    std::vector<Card> mergeHand(const std::vector<Card> &hand, const std::vector<Card> &communityCards);
-
-    bool isFlush(const std::vector<Card> &allCards, char &flushSuit);
-
-    bool isStraight(const std::vector<int> &ranks, int &highCard);
-
-    HandResult determineBestHand(const std::vector<Card> &allCards);
+    std::array<Card, 7> mergeHand(const ::std::array<Card, 2> &hand, const std::array<Card, 5> &communityCards);
 };

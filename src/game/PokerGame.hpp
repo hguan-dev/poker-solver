@@ -3,8 +3,8 @@
 #include "Bot.hpp"
 #include "Deck.hpp"
 #include "Player.hpp"
+#include <array>
 #include <memory>
-#include <vector>
 
 class PokerGame
 {
@@ -12,7 +12,7 @@ class PokerGame
     std::unique_ptr<Deck> deck;
     std::unique_ptr<Player> player;
     std::unique_ptr<Bot> bot;
-    std::vector<Card> communityCards;
+    std::array<Card, 5> communityCards;
     double pot;
     double currentBet;
     bool playerIsDealer;

@@ -1,57 +1,45 @@
 #include "Card.hpp"
 #include <fmt/core.h>
 
-Card::Card(const char &rank, const char &suit) : rank(rank), suit(suit) {}
+Card::Card(RANK rank, SUIT suit) : rank(rank), suit(suit) {}
+Card::Card() : rank(RANK::TWO), suit(SUIT::HEARTS) {}
 
-const char &Card::getRank() const
+Card::RANK Card::getRank() const
 {
     return rank;
 }
-const char &Card::getSuit() const
+
+Card::SUIT Card::getSuit() const
 {
     return suit;
 }
 
 int Card::getValue() const
 {
-
-    switch (rank) {
-    case 'A':
-        return 14;
-    case 'K':
-        return 13;
-    case 'Q':
-        return 12;
-    case 'J':
-        return 11;
-    case 'T':
-        return 10;
-    default:
-        break;
-    }
-
-    return rank - '0';
+    return static_cast<int>(rank);
 }
 
+/*
 std::string Card::toString() const
 {
     std::string suit_str;
     switch (suit) {
-    case 'H':
+    case SUIT::HEARTS:
         suit_str = "Hearts";
         break;
-    case 'D':
+    case SUIT::DIAMONDS:
         suit_str = "Diamonds";
         break;
-    case 'S':
+    case SUIT::SPADES:
         suit_str = "Spades";
         break;
-    case 'C':
+    case SUIT::CLUBS:
         suit_str = "Clubs";
         break;
     default:
         return "Error. Invalid suit.\n";
     }
 
-    return fmt::format("{} of {}", rank, suit_str);
+    return fmt::format("{} of {}", static_cast<int>(rank), suit_str);
 }
+*/
