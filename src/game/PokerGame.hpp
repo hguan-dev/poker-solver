@@ -16,6 +16,7 @@ class PokerGame
     double pot;
     double currentBet;
     bool playerIsDealer;
+    int communityCardIndex = 0;
 
   public:
     PokerGame();

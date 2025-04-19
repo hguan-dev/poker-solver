@@ -51,6 +51,7 @@ void PokerGame::resetGameState()
     pot = 0;
     currentBet = 0;
     communityCards.fill(Card());
+    communityCardIndex = 0;
     deck->shuffle();
     player->reset();
     bot->reset();
@@ -91,7 +92,7 @@ void PokerGame::dealHoleCards()
 
 void PokerGame::dealCommunityCards(int numCards)
 {
-    for (int i = 0; i < numCards; ++i) { communityCards[i] = deck->popTop(); }
+    for (int i = 0; i < numCards; ++i) { communityCards[communityCardIndex++] = deck->popTop(); }
 }
 
 

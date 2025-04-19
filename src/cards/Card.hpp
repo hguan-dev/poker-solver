@@ -5,9 +5,9 @@
 class Card
 {
   public:
-    enum class SUIT { HEARTS, DIAMONDS, CLUBS, SPADES };
+    enum class SUIT { INVALID = -1, HEARTS, DIAMONDS, CLUBS, SPADES };
 
-    enum class RANK { TWO = 2, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE };
+    enum class RANK { INVALID = 0, TWO = 2, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE };
 
     Card(RANK rank, SUIT suit);
     Card();
