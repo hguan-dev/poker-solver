@@ -38,8 +38,13 @@ lint: build
 	| xargs clang-format --dry-run --Werror
 
 format:
-	find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
-	run-clang-tidy -fix -j $(shell nproc 2>/dev/null || sysctl -n hw.ncpu) -p build
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) \
+	| grep -v '/tests/' \
+	| xargs clang-format -i
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) \
+	| grep -v '/tests/' \
+	| xargs run-clang-tidy -fix -j $(shell nproc 2>/dev/null || sysctl -n hw.ncpu) -p build --
+
 
 gdb:
 	$(MAKE) build DEBUG=1
