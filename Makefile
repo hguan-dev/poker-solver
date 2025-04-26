@@ -26,20 +26,18 @@ cppinstall:
 clean:
 	@rm -rf build
 
-test: cpptest
-
-cpptest: build
+test: build
 	@cd build && ctest --output-on-failure
 
-lint: cpplint
+lint: build
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) \
+	| grep -v '/tests/' \
+	| xargs run-clang-tidy -p build --
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) \
+	| grep -v '/tests/' \
+	| xargs clang-format --dry-run --Werror
 
-cpplint: build
-	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) | xargs run-clang-tidy -p build --
-	find src -type f \( -name '*.cpp' -o -name '*.hpp' \) | xargs clang-format --dry-run --Werror
-
-format: cppformat
-
-cppformat:
+format:
 	find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
 	run-clang-tidy -fix -j $(shell nproc 2>/dev/null || sysctl -n hw.ncpu) -p build
 
