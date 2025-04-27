@@ -3,8 +3,13 @@
 #include "Actions.hpp"
 #include "Deck.hpp"
 #include "InfoSet.hpp"
+#include "MCCFRState.hpp"
 #include "Node.hpp"
+
+#include <array>
+#include <random>
 #include <unordered_map>
+#include <vector>
 
 class MCCFR
 {
@@ -14,47 +19,21 @@ class MCCFR
     void runIterations();
 
   private:
-    double mccfr(std::array<Card, 2> playerCards,
-      std::array<Card, 2> opponentCards,
-      std::array<Card, 5> communityCards,
-      int communityCardIndex,
-      std::vector<ActionID> history,
-      int pot,
-      int raisesThisStreet,
-      double piTraverser,
-      double piOpponent,
-      int traverser,
-      int street,
-      bool facingBet,
-      bool traverserAllIn,
-      bool opponentAllIn,
-      int playerStack,
-      int opponentStack,
-      int t);
+    double mccfr(MCCFRState state);
 
-    bool isTerminal(const std::vector<ActionID> &history,
-      int raisesThisStreet,
-      int street,
-      bool traverserAllIn,
-      bool opponentAllIn) const;
+    bool isTerminal(const MCCFRState &state) const;
 
-    double computePayoff(const std::array<Card, 2> &player,
-      const std::array<Card, 2> &opponent,
-      const std::array<Card, 5> &community,
-      int pot,
-      int traverser) const;
+    double computePayoff(const MCCFRState &state) const;
 
     void dealNextStreet(std::array<Card, 5> &community, int &idx, int street);
 
     InfoSetKey createInfoSet(const Card &privateCard, const std::vector<ActionID> &history) const;
 
-    std::vector<ActionID> getAvailableActions(bool facingBet,
-      int raisesThisStreet,
-      int street,
-      bool traverserAllIn,
-      bool opponentAllIn) const;
+    std::vector<ActionID> getAvailableActions(const MCCFRState &state) const;
 
     int sampleAction(const std::vector<double> &strat) const;
+
+    friend struct MCCFRTest_FriendAccessor;
 
   private:
     int iterations_;
