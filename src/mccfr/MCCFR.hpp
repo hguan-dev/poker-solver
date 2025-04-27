@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Actions.hpp"
+#include "Deck.hpp"
 #include "InfoSet.hpp"
 #include "Node.hpp"
-#include "PokerGame.hpp"
-#include <random>
 #include <unordered_map>
 
 class MCCFR
@@ -15,8 +14,8 @@ class MCCFR
     void runIterations();
 
   private:
-    double mccfr(const std::vector<Card> &playerCards,
-      const std::vector<Card> &opponentCards,
+    double mccfr(std::array<Card, 2> playerCards,
+      std::array<Card, 2> opponentCards,
       std::array<Card, 5> communityCards,
       int communityCardIndex,
       std::vector<ActionID> history,
@@ -39,13 +38,13 @@ class MCCFR
       bool traverserAllIn,
       bool opponentAllIn) const;
 
-    double computePayoff(const std::vector<Card> &playerCards,
-      const std::vector<Card> &opponentCards,
-      const std::array<Card, 5> &communityCards,
+    double computePayoff(const std::array<Card, 2> &player,
+      const std::array<Card, 2> &opponent,
+      const std::array<Card, 5> &community,
       int pot,
       int traverser) const;
 
-    void dealNextStreet(std::array<Card, 5> &communityCards, int &communityCardIndex, int street);
+    void dealNextStreet(std::array<Card, 5> &community, int &idx, int street);
 
     InfoSetKey createInfoSet(const Card &privateCard, const std::vector<ActionID> &history) const;
 
@@ -55,15 +54,14 @@ class MCCFR
       bool traverserAllIn,
       bool opponentAllIn) const;
 
-    int sampleAction(const std::vector<double> &strategy) const;
+    int sampleAction(const std::vector<double> &strat) const;
 
   private:
     int iterations_;
     int betOptions_;
-    std::mt19937 rng_;
+    mutable std::mt19937 rng_;
 
     std::unordered_map<InfoSetKey, Node> nodes_;
 
     Deck deck_;
-    PokerGame game_;
 };

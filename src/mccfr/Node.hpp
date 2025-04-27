@@ -11,6 +11,7 @@ class Node
     std::vector<double> strategySum;
 
     Node(int n);
+    Node() : numActions(0) {}
 
     std::vector<double> getStrategy();
     std::vector<double> getAverageStrategy();
