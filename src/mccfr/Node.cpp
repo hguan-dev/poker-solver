@@ -25,7 +25,7 @@ std::vector<double> Node::getStrategy()
     return strategy;
 }
 
-std::vector<double> Node::getAverageStrategy()
+std::vector<double> Node::getAverageStrategy() const
 {
     std::vector<double> avgStrategy(numActions, 0.0);
     double normalize = std::accumulate(strategySum.begin(), strategySum.end(), 0);
