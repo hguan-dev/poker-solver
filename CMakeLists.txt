@@ -23,19 +23,18 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
 
 find_package(GTest REQUIRED)
-find_package(pybind11 REQUIRED)
 find_package(fmt REQUIRED)
 
 # Define common source files
-file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp src/utils/*.cpp)
+file(GLOB_RECURSE IMPLEMENTATION_SOURCES src/cards/*.cpp src/game/*.cpp src/players/*.cpp src/mccfr/*.cpp src/utils/*.cpp)
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE BENCHMARK_SOURCES benchmarking/*.cpp)
 
 # Common include directories
-set(COMMON_INCLUDE_DIRS src src/cards src/game src/players src/utils ${GTest_INCLUDE_DIRS})
+set(COMMON_INCLUDE_DIRS src src/cards src/game src/players src/utils src/mccfr ${GTest_INCLUDE_DIRS})
 
 # Common link libraries
-set(COMMON_LINK_LIBRARIES pybind11::pybind11 fmt::fmt GTest::gtest GTest::gtest_main pthread)
+set(COMMON_LINK_LIBRARIES fmt::fmt GTest::gtest GTest::gtest_main pthread)
 
 # Main executable
 add_executable(poker_solver ${SOURCES} ${IMPLEMENTATION_SOURCES})

@@ -20,4 +20,4 @@ jobs:
         python-version: '3.12'
 
     - name: Build and Run C++ Tests
-      run: make cpptest
+      run: make test 
