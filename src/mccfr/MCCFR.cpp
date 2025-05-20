@@ -48,10 +48,7 @@ double MCCFR::mccfr(MCCFRState state)
         std::vector<double> utilities(actions.size());
 
         for (size_t i = 0; i < actions.size(); ++i) {
-            MCCFRState nextState = state;
-            nextState.history.push_back(actions[i]);
-            // TODO: update nextState.pot, nextState.raisesThisStreet, nextState.facingBet if needed
-
+            MCCFRState nextState = applyAction(state, actions[i]);
             utilities[i] = mccfr(nextState);
             nodeUtil += strategy[i] * utilities[i];
         }
@@ -66,14 +63,104 @@ double MCCFR::mccfr(MCCFRState state)
         int idx = sampleAction(strategy);
         ActionID action = actions[idx];
 
-        MCCFRState nextState = state;
-        nextState.history.push_back(action);
-        // TODO: update nextState.pot, nextState.raisesThisStreet, nextState.facingBet if needed
+        MCCFRState nextState = applyAction(state, action);
 
         double util = mccfr(nextState);
         node.strategySum[idx] += state.piOpponent * strategy[idx];
         return util;
     }
+}
+
+MCCFRState MCCFR::applyAction(const MCCFRState &state, ActionID action)
+{
+    MCCFRState next = state;
+    next.history.push_back(action);
+
+    int acting = static_cast<int>(next.history.size() - 1) % 2;
+    bool isTraverser = (acting == next.traverser);
+
+    int &stack = isTraverser ? next.playerStack : next.opponentStack;
+    int &oppStack = isTraverser ? next.opponentStack : next.playerStack;
+    bool &allIn = isTraverser ? next.traverserAllIn : next.opponentAllIn;
+
+    constexpr int BET_SIZE = 10;
+
+    switch (action) {
+    case ActionID::FOLD:
+    case ActionID::POSTFLOP_FOLD:
+        break;
+
+    case ActionID::CALL:
+    case ActionID::POSTFLOP_CALL:
+        next.pot += BET_SIZE;
+        stack -= BET_SIZE;
+        next.facingBet = false;
+        break;
+
+    case ActionID::CHECK:
+    case ActionID::POSTFLOP_CHECK:
+        next.facingBet = false;
+        break;
+
+    case ActionID::BET_2_5BB:
+    case ActionID::BET_2BB_MIN:
+    case ActionID::BET_3BB:
+        next.pot += BET_SIZE;
+        stack -= BET_SIZE;
+        next.facingBet = true;
+        next.raisesThisStreet += 1;
+        if (stack <= 0) {
+            allIn = true;
+            next.facingBet = false;
+        }
+        break;
+
+    case ActionID::BET_20POT:
+    case ActionID::BET_25POT:
+    case ActionID::BET_35POT:
+    case ActionID::BET_50POT:
+    case ActionID::BET_75POT:
+    case ActionID::BET_100POT:
+        next.pot += BET_SIZE;
+        stack -= BET_SIZE;
+        next.facingBet = true;
+        next.raisesThisStreet += 1;
+        if (stack <= 0) {
+            allIn = true;
+            next.facingBet = false;
+        }
+        break;
+
+    case ActionID::RAISE_2X:
+    case ActionID::RAISE_2_5X:
+    case ActionID::RAISE_3X:
+    case ActionID::RAISE_3_5X:
+    case ActionID::RAISE_4X:
+    case ActionID::POSTFLOP_RAISE_POT:
+    case ActionID::POSTFLOP_RAISE_75POT:
+        next.pot += BET_SIZE;
+        stack -= BET_SIZE;
+        next.facingBet = true;
+        next.raisesThisStreet += 1;
+        if (stack <= 0) {
+            allIn = true;
+            next.facingBet = false;
+        }
+        break;
+
+    default:
+        throw std::runtime_error("Unhandled ActionID in applyAction()");
+    }
+
+    if (!next.facingBet && next.raisesThisStreet == 0
+        && (action == ActionID::CHECK || action == ActionID::POSTFLOP_CHECK || action == ActionID::CALL
+            || action == ActionID::POSTFLOP_CALL)) {
+        ++next.street;
+        dealNextStreet(next.communityCards, next.communityCardIndex, next.street);
+        next.raisesThisStreet = 0;
+    }
+
+    return next;
 }
 
 bool MCCFR::isTerminal(const MCCFRState &state) const
@@ -138,4 +225,3 @@ void MCCFR::dealNextStreet(std::array<Card, 5> &community, int &idx, int street)
         community[idx++] = deck_.popTop();
     }
 }
-

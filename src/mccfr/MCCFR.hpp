@@ -29,6 +29,8 @@ class MCCFR
 
     InfoSetKey createInfoSet(const Card &privateCard, const std::vector<ActionID> &history) const;
 
+    MCCFRState applyAction(const MCCFRState &state, ActionID action);
+
     std::vector<ActionID> getAvailableActions(const MCCFRState &state) const;
 
     int sampleAction(const std::vector<double> &strat) const;

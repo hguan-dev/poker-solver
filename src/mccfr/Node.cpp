@@ -14,10 +14,6 @@ std::vector<double> Node::getStrategy()
 
     if (normalize > 0.0) {
         for (int a = 0; a < numActions; ++a) { strategy[a] /= normalize; }
-    }
-
-    if (normalize > 0.0) {
-        for (int a = 0; a < numActions; ++a) { strategy[a] /= normalize; }
     } else {
         double uniform = 1.0 / numActions;
         for (int a = 0; a < numActions; ++a) { strategy[a] = uniform; }
