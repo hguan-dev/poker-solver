@@ -1,5 +1,6 @@
 #include "MCCFR.hpp"
 #include "HandEvaluator.hpp"
+#include <stdexcept>
 
 MCCFR::MCCFR(int iterations)
   : iterations_(iterations), betOptions_(static_cast<int>(ActionSets::preflopOpen.size())),
